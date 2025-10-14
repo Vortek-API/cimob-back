@@ -9,7 +9,6 @@ import lombok.*;
 @Builder
 public class IndicadorRequestDTO {
     private String nome;
-    private Double valor;
     private IndicadorMnemonico mnemonico;
     private String descricao;
     private Long usuarioId;

@@ -27,7 +27,6 @@ public class IndicadorController {
     public ResponseEntity<IndicadorResponseDTO> criar(@RequestBody IndicadorRequestDTO dto) {
         Indicador i = Indicador.builder()
                 .nome(dto.getNome())
-                .valor(dto.getValor())
                 .mnemonico(dto.getMnemonico())
                 .descricao(dto.getDescricao())
                 .deletado("N")
@@ -40,13 +39,13 @@ public class IndicadorController {
     @GetMapping
     public ResponseEntity<List<IndicadorResponseDTO>> listar(
             @RequestParam(required = false) Long regiaoId,
-            @RequestParam(required = false) String dataInicial) {
+            @RequestParam(required = false) String timestamp) {
         List<Indicador> indicadores;
         
         if (regiaoId != null) {
-            indicadores = service.listarPorRegiao(regiaoId, dataInicial);
+            indicadores = service.listarPorRegiao(regiaoId, timestamp);
         } else {
-            indicadores = service.listarTodos(dataInicial).stream()
+            indicadores = service.listarTodos(timestamp).stream()
                     .filter(i -> !"S".equals(i.getDeletado()))
                     .collect(Collectors.toList());
         }
@@ -60,8 +59,8 @@ public class IndicadorController {
     @GetMapping("/indices-criticos")
     public ResponseEntity<List<IndiceCriticoResponseDTO>> listarIndicesCriticos(
             @RequestParam(required = false) Long regiaoId,
-            @RequestParam(required = false) String dataInicial) {
-        List<IndiceCriticoResponseDTO> resp = service.listarTopExcessosVelocidade(regiaoId, dataInicial);
+            @RequestParam(required = false) String timestamp) {
+        List<IndiceCriticoResponseDTO> resp = service.listarTopExcessosVelocidade(regiaoId, timestamp);
         return ResponseEntity.ok(resp);
     }
 
