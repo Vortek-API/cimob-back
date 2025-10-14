@@ -47,12 +47,15 @@ CREATE TABLE Radar (
 CREATE TABLE RegistroVelocidade (
     registroVelocidadeId NUMBER PRIMARY KEY,
     radarId              VARCHAR2(100),
+    regiaoId             NUMBER,
     tipoVeiculo          VARCHAR2(50),
     velocidadeRegistrada NUMBER(3) NOT NULL,
     data                 DATE DEFAULT SYSDATE NOT NULL,
     deletado             CHAR(1) DEFAULT 'N' CHECK (deletado IN ('S','N')),
     CONSTRAINT fk_registro_radar FOREIGN KEY (radarId)
-        REFERENCES Radar(radarId)
+        REFERENCES Radar(radarId),
+    CONSTRAINT fk_registro_regiao FOREIGN KEY (regiaoId)
+        REFERENCES Regiao(regiaoId)
 );
 
 -- Indicador
@@ -277,4 +280,5 @@ END;
 -- ==========================
 CREATE INDEX idx_radar_regiao ON Radar(regiaoId);
 CREATE INDEX idx_registro_radar ON RegistroVelocidade(radarId);
+CREATE INDEX idx_registro_regiao ON RegistroVelocidade(regiaoId);
 CREATE INDEX idx_evento_indicador ON Evento(indicadorId);
