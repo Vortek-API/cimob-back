@@ -12,6 +12,7 @@ import fatec.vortek.cimob.infrastructure.repository.IndicadorRepository;
 import fatec.vortek.cimob.infrastructure.repository.EventoRepository;
 import fatec.vortek.cimob.infrastructure.repository.RadarRepository;
 import fatec.vortek.cimob.infrastructure.repository.RegistroVelocidadeRepository;
+import fatec.vortek.cimob.infrastructure.config.AppConfig;
 import fatec.vortek.cimob.presentation.dto.response.IndiceCriticoResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
+import java.time.ZonedDateTime;
+import java.time.ZoneId;
 
 @Service
 @RequiredArgsConstructor
@@ -65,10 +68,10 @@ public class IndicadorServiceImpl implements IndicadorService {
     }
     
     @Override
-    public List<Indicador> listarTodos(String dataInicial) {
+    public List<Indicador> listarTodos(String timestamp) {
         List<Indicador> indicadores = repository.findAll();
         indicadores.forEach(indicador -> {
-            indicador = calcularValorIndicadores(indicador, dataInicial);
+            indicador = calcularValorIndicadores(indicador, timestamp);
         });
 
         return indicadores;
@@ -80,7 +83,7 @@ public class IndicadorServiceImpl implements IndicadorService {
     }
     
     @Override
-    public List<Indicador> listarPorRegiao(Long regiaoId, String dataInicial) {
+    public List<Indicador> listarPorRegiao(Long regiaoId, String timestamp) {
         Regiao regiao = regiaoService.buscarPorId(regiaoId);
         if (regiao == null) {
             throw new RuntimeException("Região não encontrada com ID: " + regiaoId);
@@ -91,7 +94,7 @@ public class IndicadorServiceImpl implements IndicadorService {
                 .collect(Collectors.toList());
 
         todosIndicadores.forEach(indicador -> {
-            calcularValorIndicadoresPorRegiao(indicador, regiaoId, dataInicial);
+            calcularValorIndicadoresPorRegiao(indicador, regiaoId, timestamp);
         });
 
         return todosIndicadores;
@@ -120,8 +123,13 @@ public class IndicadorServiceImpl implements IndicadorService {
     }
 
     @Override
-    public java.util.List<IndiceCriticoResponseDTO> listarTopExcessosVelocidade(Long regiaoId, String dataInicial) {
-        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, dataInicial);
+    public java.util.List<IndiceCriticoResponseDTO> listarTopExcessosVelocidade(Long regiaoId) {
+        return listarTopExcessosVelocidade(regiaoId, null);
+    }
+    
+    @Override
+    public java.util.List<IndiceCriticoResponseDTO> listarTopExcessosVelocidade(Long regiaoId, String timestamp) {
+        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
 
         class Agg { double somaVel; int cont; LocalDateTime minInf; LocalDateTime maxInf; Integer velPerm; Long regiaoId; String regiaoNome; String endereco; }
 
@@ -174,21 +182,21 @@ public class IndicadorServiceImpl implements IndicadorService {
         return calcularValorIndicadores(indicador, null);
     }
     
-    public Indicador calcularValorIndicadores(Indicador indicador, String dataInicial) {
-        return calcularValorIndicadoresPorRegiao(indicador, null, dataInicial);
+    public Indicador calcularValorIndicadores(Indicador indicador, String timestamp) {
+        return calcularValorIndicadoresPorRegiao(indicador, null, timestamp);
     }
     
     public Indicador calcularValorIndicadoresPorRegiao(Indicador indicador, Long regiaoId) {
         return calcularValorIndicadoresPorRegiao(indicador, regiaoId, null);
     }
     
-    public Indicador calcularValorIndicadoresPorRegiao(Indicador indicador, Long regiaoId, String dataInicial) {
+    public Indicador calcularValorIndicadoresPorRegiao(Indicador indicador, Long regiaoId, String timestamp) {
         if (indicador.getMnemonico() == IndicadorMnemonico.EXCESSO_VELOCIDADE) {
-            indicador.setValor(calcularExcessoVelocidade(regiaoId, dataInicial));
+            indicador.setValor(calcularExcessoVelocidade(regiaoId, timestamp));
         } else if (indicador.getMnemonico() == IndicadorMnemonico.VARIABILIDADE_VELOCIDADE) {
-            indicador.setValor(calcularVariabilidadeVelocidade(regiaoId, dataInicial));
+            indicador.setValor(calcularVariabilidadeVelocidade(regiaoId, timestamp));
         } else if (indicador.getMnemonico() == IndicadorMnemonico.VEICULOS_LENTOS) {
-            indicador.setValor(calcularVeiculosLentos(regiaoId, dataInicial));
+            indicador.setValor(calcularVeiculosLentos(regiaoId, timestamp));
         } else {
             indicador.setValor(0.0);
         }
@@ -199,8 +207,8 @@ public class IndicadorServiceImpl implements IndicadorService {
         return calcularExcessoVelocidade(regiaoId, null);
     }
     
-    private Double calcularExcessoVelocidade(Long regiaoId, String dataInicial) {
-        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, dataInicial);
+    private Double calcularExcessoVelocidade(Long regiaoId, String timestamp) {
+        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
         
         if (registros.isEmpty()) {
             return 1.0;
@@ -226,8 +234,8 @@ public class IndicadorServiceImpl implements IndicadorService {
         return calcularVariabilidadeVelocidade(regiaoId, null);
     }
     
-    private Double calcularVariabilidadeVelocidade(Long regiaoId, String dataInicial) {
-        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, dataInicial);
+    private Double calcularVariabilidadeVelocidade(Long regiaoId, String timestamp) {
+        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
         
         if (registros.size() < 2) {
             return 1.0;
@@ -257,8 +265,8 @@ public class IndicadorServiceImpl implements IndicadorService {
         return calcularVeiculosLentos(regiaoId, null);
     }
     
-    private Double calcularVeiculosLentos(Long regiaoId, String dataInicial) {
-        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, dataInicial);
+    private Double calcularVeiculosLentos(Long regiaoId, String timestamp) {
+        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
         
         if (registros.isEmpty()) {
             return 1.0;
@@ -288,28 +296,43 @@ public class IndicadorServiceImpl implements IndicadorService {
         return buscarRegistrosPorRegiao(regiaoId, null);
     }
     
-    private List<RegistroVelocidade> buscarRegistrosPorRegiao(Long regiaoId, String dataInicial) {
-        LocalDateTime data;
-
-        if (dataInicial != null && !dataInicial.isEmpty()) {
+    private List<RegistroVelocidade> buscarRegistrosPorRegiao(Long regiaoId, String timestamp) {
+        LocalDateTime inicioPeriodo;
+        LocalDateTime fimPeriodo;
+        
+        if (timestamp != null && !timestamp.isEmpty()) {
             try {
-                data = LocalDateTime.parse(dataInicial);
+                // Se timestamp fornecido, usar ele como ponto de referência
+                // Frontend agora envia horário local sem timezone
+                LocalDateTime timestampRef = LocalDateTime.parse(timestamp);
+                
+                inicioPeriodo = timestampRef.minusMinutes(AppConfig.getTimeWindowMinutes());
+                fimPeriodo = timestampRef;
             } catch (DateTimeParseException ex) {
-                DateTimeFormatter fmtSemSegundos = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-                data = LocalDateTime.parse(dataInicial, fmtSemSegundos);
+                try {
+                    // Fallback para formato sem segundos
+                    DateTimeFormatter fmtSemSegundos = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+                    LocalDateTime timestampRef = LocalDateTime.parse(timestamp, fmtSemSegundos);
+                    inicioPeriodo = timestampRef.minusMinutes(AppConfig.getTimeWindowMinutes());
+                    fimPeriodo = timestampRef;
+                } catch (DateTimeParseException ex2) {
+                    // Se ainda falhar, usar comportamento padrão
+                    LocalDateTime agora = LocalDateTime.now();
+                    inicioPeriodo = agora.minusMinutes(AppConfig.getTimeWindowMinutes());
+                    fimPeriodo = agora;
+                }
             }
         } else {
-            data = LocalDateTime.of(2025, 8, 3, 14, 10, 0);
+            // Comportamento padrão: últimos X minutos (AppConfig)
+            LocalDateTime agora = LocalDateTime.now();
+            inicioPeriodo = agora.minusMinutes(AppConfig.getTimeWindowMinutes());
+            fimPeriodo = agora;
         }
 
-        // Novo requisito: considerar o dia inteiro
-        LocalDateTime inicioDia = data.toLocalDate().atStartOfDay();
-        LocalDateTime fimDia = data.toLocalDate().atTime(23, 59, 59);
-
         if (regiaoId == null) {
-            return registroVelocidadeRepository.findByDiaInteiroAndDeletado(inicioDia, fimDia);
+            return registroVelocidadeRepository.findByDataBetweenAndDeletado(inicioPeriodo, fimPeriodo);
         } else {
-            return registroVelocidadeRepository.findByDiaInteiroAndRegiaoAndDeletado(inicioDia, fimDia, regiaoId);
+            return registroVelocidadeRepository.findByDataBetweenAndRegiaoAndDeletado(inicioPeriodo, fimPeriodo, regiaoId);
         }
     }
 }
