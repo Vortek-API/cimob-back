@@ -1,9 +1,11 @@
 package fatec.vortek.cimob.application.service;
 
 import fatec.vortek.cimob.domain.model.Radar;
+import fatec.vortek.cimob.domain.model.Regiao;
 import fatec.vortek.cimob.domain.model.RegistroVelocidade;
 import fatec.vortek.cimob.domain.service.RegistroVelocidadeService;
 import fatec.vortek.cimob.infrastructure.repository.RadarRepository;
+import fatec.vortek.cimob.infrastructure.repository.RegiaoRepository;
 import fatec.vortek.cimob.infrastructure.repository.RegistroVelocidadeRepository;
 import fatec.vortek.cimob.presentation.dto.request.RegistroVelocidadeRequestDTO;
 import fatec.vortek.cimob.presentation.dto.response.RegistroVelocidadeResponseDTO;
@@ -18,10 +20,12 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
 
     private final RegistroVelocidadeRepository registroVelocidadeRepository;
     private final RadarRepository radarRepository;
+    private final RegiaoRepository regiaoRepository;
 
-    public RegistroVelocidadeServiceImpl(RegistroVelocidadeRepository registroVelocidadeRepository, RadarRepository radarRepository) {
+    public RegistroVelocidadeServiceImpl(RegistroVelocidadeRepository registroVelocidadeRepository, RadarRepository radarRepository, RegiaoRepository regiaoRepository) {
         this.registroVelocidadeRepository = registroVelocidadeRepository;
         this.radarRepository = radarRepository;
+        this.regiaoRepository = regiaoRepository;
     }
 
     @Override
@@ -29,9 +33,12 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
     public RegistroVelocidadeResponseDTO criar(RegistroVelocidadeRequestDTO dto) {
         Radar radar = radarRepository.findById(dto.getRadarId())
                 .orElseThrow(() -> new RuntimeException("Radar não encontrado com ID: " + dto.getRadarId()));
+        Regiao regiao = regiaoRepository.findById(dto.getRegiaoId())
+                .orElseThrow(() -> new RuntimeException("Radar não encontrado com ID: " + dto.getRadarId()));
 
         RegistroVelocidade novoRegistro = new RegistroVelocidade();
         novoRegistro.setRadar(radar);
+        novoRegistro.setRegiao(regiao);
         novoRegistro.setTipoVeiculo(dto.getTipoVeiculo());
         novoRegistro.setVelocidadeRegistrada(dto.getVelocidadeRegistrada());
         novoRegistro.setData(dto.getData());
