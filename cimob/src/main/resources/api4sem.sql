@@ -70,6 +70,24 @@ CREATE TABLE Indicador (
         REFERENCES Usuario(usuarioId)
 );
 
+-- IndicadorDados
+CREATE TABLE IndicadorDados (
+    dadoId              NUMBER PRIMARY KEY,
+    indicadorId         NUMBER NOT NULL,
+    radarId             VARCHAR2(100) NOT NULL,
+    tipoVeiculo         VARCHAR2(50),
+    velocidadeMedia     NUMBER(6,2),
+    mediaUltrapassaram  NUMBER(6,2),
+    variacaoVelocidade  NUMBER(6,2),
+    periodoReferencia   VARCHAR2(50),
+    dataCalculo         DATE DEFAULT SYSDATE NOT NULL,
+    
+    CONSTRAINT fk_dados_indicador FOREIGN KEY (indicadorId)
+        REFERENCES Indicador(indicadorId),
+    CONSTRAINT fk_dados_radar FOREIGN KEY (radarId)
+        REFERENCES Radar(radarId)
+);
+
 -- Evento
 CREATE TABLE Evento (
     eventoId     NUMBER PRIMARY KEY,
@@ -134,6 +152,7 @@ CREATE SEQUENCE seq_regiao START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_radar START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_registro START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_indicador START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_indicador_dados START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_evento START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_indicadores_timeline START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_eventos_timeline START WITH 1 INCREMENT BY 1;
@@ -187,6 +206,16 @@ FOR EACH ROW
 BEGIN
     IF :NEW.indicadorId IS NULL THEN
         SELECT seq_indicador.NEXTVAL INTO :NEW.indicadorId FROM dual;
+    END IF;
+END;
+/
+
+CREATE OR REPLACE TRIGGER trg_indicador_dados_pk
+BEFORE INSERT ON IndicadorDados
+FOR EACH ROW
+BEGIN
+    IF :NEW.dadoId IS NULL THEN
+        SELECT seq_indicador_dados.NEXTVAL INTO :NEW.dadoId FROM dual;
     END IF;
 END;
 /
@@ -282,3 +311,5 @@ CREATE INDEX idx_radar_regiao ON Radar(regiaoId);
 CREATE INDEX idx_registro_radar ON RegistroVelocidade(radarId);
 CREATE INDEX idx_registro_regiao ON RegistroVelocidade(regiaoId);
 CREATE INDEX idx_evento_indicador ON Evento(indicadorId);
+CREATE INDEX idx_dados_indicador ON IndicadorDados(indicadorId);
+CREATE INDEX idx_dados_radar ON IndicadorDados(radarId);
