@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import fatec.vortek.cimob.presentation.dto.response.IndiceCriticoResponseDTO;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/indicadores")
 @RequiredArgsConstructor
