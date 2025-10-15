@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/eventos")
 @RequiredArgsConstructor

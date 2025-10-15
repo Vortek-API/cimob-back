@@ -12,6 +12,7 @@ import fatec.vortek.cimob.presentation.dto.response.UsuarioResponseDTO;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/usuario")
 @RequiredArgsConstructor
