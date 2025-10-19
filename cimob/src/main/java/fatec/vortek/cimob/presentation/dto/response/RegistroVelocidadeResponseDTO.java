@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import java.time.LocalDateTime;
 
+import fatec.vortek.cimob.domain.enums.TipoVeiculo;
 import fatec.vortek.cimob.domain.model.RegistroVelocidade;
 
 @Data
@@ -12,7 +13,7 @@ public class RegistroVelocidadeResponseDTO {
     private Long registroVelocidadeId;
     private String radarId;
     private Long regiaoId;
-    private String tipoVeiculo;
+    private TipoVeiculo tipoVeiculo;
     private Integer velocidadeRegistrada;
     private LocalDateTime data;
 

@@ -76,4 +76,20 @@ public class IndicadorController {
         service.desassociarDeEvento(indicadorId, eventoId);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/onibus")
+    public ResponseEntity<List<IndicadorResponseDTO>> listarOnibus(
+            @RequestParam(required = false) Long regiaoId,
+            @RequestParam(required = false) String timestamp) {
+        List<Indicador> indicadores;
+        if (regiaoId != null) {
+            indicadores = service.listarPorRegiaoOnibus(regiaoId, timestamp);
+        } else {
+            indicadores = service.listarTodosOnibus(timestamp);
+        }
+        List<IndicadorResponseDTO> list = indicadores.stream()
+                .map(i -> new IndicadorResponseDTO(i.getIndicadorId(), i.getNome(), i.getValor(), i.getMnemonico(), i.getDescricao(), null))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(list);
+    }
 }
