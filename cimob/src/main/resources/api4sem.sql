@@ -338,5 +338,7 @@ END;
 CREATE INDEX idx_radar_regiao ON Radar(regiaoId);
 CREATE INDEX idx_registro_radar ON RegistroVelocidade(radarId);
 CREATE INDEX idx_registro_regiao ON RegistroVelocidade(regiaoId);
+CREATE INDEX idx_registro_data_deletado ON RegistroVelocidade("data", deletado);
+CREATE INDEX idx_registro_regiao_data_deletado ON RegistroVelocidade(regiaoId, "data", deletado);
 CREATE INDEX idx_evento_indicador ON Evento(indicadorId);
 CREATE INDEX idx_ponto_regiao ON Ponto(regiaoId);
