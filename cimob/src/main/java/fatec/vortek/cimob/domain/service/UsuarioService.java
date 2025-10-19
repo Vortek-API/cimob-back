@@ -7,10 +7,10 @@ import fatec.vortek.cimob.presentation.dto.request.UsuarioRequestDTO;
 import fatec.vortek.cimob.presentation.dto.response.UsuarioResponseDTO;
 
 public interface UsuarioService {
-    UsuarioResponseDTO criar(UsuarioRequestDTO usuario);
-    Usuario atualizar(Usuario usuario);
-    void deletar(Long id);
+    UsuarioResponseDTO criar(UsuarioRequestDTO dto);
     UsuarioResponseDTO buscarPorId(Long id);
     List<UsuarioResponseDTO> listarTodos();
+    void deletar(Long id);
+    Usuario atualizar(Usuario usuario);
 
 }
