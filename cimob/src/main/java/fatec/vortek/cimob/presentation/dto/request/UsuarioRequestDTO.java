@@ -13,5 +13,8 @@ public class UsuarioRequestDTO {
     private String userName;
     private String email;
     private String cargo;
-    private String deletado;
+    private String senha; 
+
+    @Builder.Default
+    private String deletado = "N";
 }

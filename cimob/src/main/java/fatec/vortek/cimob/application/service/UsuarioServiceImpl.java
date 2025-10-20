@@ -6,6 +6,7 @@ import fatec.vortek.cimob.infrastructure.repository.UsuarioRepository;
 import fatec.vortek.cimob.presentation.dto.request.UsuarioRequestDTO;
 import fatec.vortek.cimob.presentation.dto.response.UsuarioResponseDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,12 +17,14 @@ import java.util.stream.Collectors;
 public class UsuarioServiceImpl implements UsuarioService {
 
     private final UsuarioRepository repository;
-    
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
     @Override
     public UsuarioResponseDTO criar(UsuarioRequestDTO dto) {
         if (repository.existsByCpf(dto.getCpf())) {
             throw new RuntimeException("Usuário já existe com CPF: " + dto.getCpf());
         }
+
         Usuario novoRegistro = new Usuario();
         novoRegistro.setNome(dto.getNome());
         novoRegistro.setCargo(dto.getCargo());
@@ -29,6 +32,10 @@ public class UsuarioServiceImpl implements UsuarioService {
         novoRegistro.setEmail(dto.getEmail());
         novoRegistro.setSobreNome(dto.getSobreNome());
         novoRegistro.setUserName(dto.getUserName());
+
+        // 🚀 Criptografa a senha antes de salvar
+        String senhaCriptografada = passwordEncoder.encode(dto.getSenha());
+        novoRegistro.setSenha(senhaCriptografada);
 
         Usuario registroSalvo = repository.save(novoRegistro);
         return toResponseDTO(registroSalvo);
@@ -57,14 +64,14 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public UsuarioResponseDTO buscarPorId(Long id) {
         Usuario usuario = repository.findById(id).orElse(null);
-         return toResponseDTO(usuario);
+        return toResponseDTO(usuario);
     }
 
     @Override
     public List<UsuarioResponseDTO> listarTodos() {
-        return repository.findAll().stream()  
-                   .map(this::toResponseDTO)  
-                   .collect(Collectors.toList());
+        return repository.findAll().stream()
+                .map(this::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     private UsuarioResponseDTO toResponseDTO(Usuario usuario) {
@@ -80,4 +87,3 @@ public class UsuarioServiceImpl implements UsuarioService {
         );
     }
 }
-
