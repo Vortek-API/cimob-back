@@ -1,5 +1,7 @@
 package fatec.vortek.cimob.infrastructure.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -18,16 +20,24 @@ public class SecurityConfig {
         this.jwtAuthFilter = jwtAuthFilter;
     }
 
-    @Bean
+   @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(request -> {
+                var corsConfig = new org.springframework.web.cors.CorsConfiguration();
+                corsConfig.setAllowedOrigins(List.of("http://localhost:3000"));
+                corsConfig.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+                corsConfig.setAllowedHeaders(List.of("*"));
+                corsConfig.setAllowCredentials(true);
+                return corsConfig;
+            }))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
+                .requestMatchers("/api/auth/**").permitAll()
                 .anyRequest().authenticated()
             )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

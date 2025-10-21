@@ -17,7 +17,7 @@ public class AutenticacaoServiceImpl {
     private final JwtUtilConfig jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public record AuthResponse(String accessToken, String refreshToken) {}
+    public record AuthResponse(String accessToken) {}
 
     public AuthResponse autenticar(String email, String senha) {
         System.out.println("[LOGIN] Tentativa de login: " + email);
@@ -40,7 +40,7 @@ public class AutenticacaoServiceImpl {
         usuarioRepository.save(usuario);
 
         System.out.println("[LOGIN] Login bem-sucedido para: " + email);
-        return new AuthResponse(accessToken, refreshToken);
+        return new AuthResponse(accessToken);
     }
 
     public AuthResponse refreshToken(String refreshToken) {
@@ -59,7 +59,7 @@ public class AutenticacaoServiceImpl {
         usuarioRepository.save(usuario);
 
         System.out.println("[REFRESH] Token atualizado para usuário: " + usuario.getEmail());
-        return new AuthResponse(accessToken, newRefreshToken);
+        return new AuthResponse(accessToken);
     }
 
     public void logout(String email) {
