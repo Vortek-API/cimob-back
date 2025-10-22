@@ -23,4 +23,5 @@ public interface IndicadorService {
     java.util.List<IndiceCriticoResponseDTO> listarTopExcessosVelocidade(Long regiaoId, String timestamp);
     Indicador obterPorMnemonicoRegiao(IndicadorMnemonico mnemonico, Long regiaoId, String timestamp);
     Indicador obterPorMnemonico(IndicadorMnemonico mnemonico, String timestamp);
+    List<Indicador> listarIndicadoresSemCalculo();
 }

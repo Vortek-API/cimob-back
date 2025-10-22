@@ -59,6 +59,16 @@ public class IndicadorController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(list);
     }
+    
+    @GetMapping("/sem-calculo")
+    public ResponseEntity<List<IndicadorResponseDTO>> listarSemCalculo() {
+        List<Indicador> indicadores = service.listarIndicadoresSemCalculo();
+        
+        List<IndicadorResponseDTO> list = indicadores.stream()
+                .map(i -> new IndicadorResponseDTO(i.getIndicadorId(), i.getNome(), i.getValor(), i.getMnemonico(), i.getDescricao(), null))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(list);
+    }
 
     @GetMapping
     public ResponseEntity<IndicadorResponseDTO> obterPorMnemonico(

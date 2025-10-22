@@ -58,6 +58,13 @@ public class IndicadorServiceImpl implements IndicadorService {
     public List<Indicador> listarTodos() {
         return listarTodos(null);
     }
+
+    @Override 
+    public List<Indicador> listarIndicadoresSemCalculo() {
+        return repository.findAll().stream()
+                .filter(ind -> !"S".equals(ind.getDeletado()))
+                .collect(Collectors.toList());
+    }
     
     @Override
     public List<Indicador> listarTodos(String timestamp) {
