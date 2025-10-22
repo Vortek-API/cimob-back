@@ -96,69 +96,6 @@ public class IndicadorServiceImpl implements IndicadorService {
         return todosIndicadores;
     }
 
-        public List<Indicador> listarTodosOnibus(String timestamp) {
-            List<Indicador> indicadores = repository.findAll().stream()
-                    .filter(ind -> !"S".equals(ind.getDeletado()))
-                    .collect(Collectors.toList());
-
-            List<RegistroVelocidade> registros = buscarRegistrosOnibusPorRegiao(null, timestamp);
-
-            indicadores.forEach(indicador -> calcularValorIndicadoresComRegistros(indicador, registros));
-
-            return indicadores;
-        }
-
-        public List<Indicador> listarPorRegiaoOnibus(Long regiaoId, String timestamp) {
-            Regiao regiao = regiaoService.buscarPorId(regiaoId);
-            if (regiao == null) {
-                throw new RuntimeException("Região não encontrada com ID: " + regiaoId);
-            }
-
-            List<Indicador> todosIndicadores = repository.findAll().stream()
-                    .filter(indicador -> !"S".equals(indicador.getDeletado()))
-                    .collect(Collectors.toList());
-
-            List<RegistroVelocidade> registros = buscarRegistrosOnibusPorRegiao(regiaoId, timestamp);
-
-            todosIndicadores.forEach(indicador -> calcularValorIndicadoresComRegistros(indicador, registros));
-
-            return todosIndicadores;
-        }
-
-        private List<RegistroVelocidade> buscarRegistrosOnibusPorRegiao(Long regiaoId, String timestamp) {
-            LocalDateTime inicioPeriodo;
-            LocalDateTime fimPeriodo;
-
-            if (timestamp != null && !timestamp.isEmpty()) {
-                try {
-                    LocalDateTime timestampRef = LocalDateTime.parse(timestamp);
-                    inicioPeriodo = timestampRef.minusMinutes(AppConfig.getTimeWindowMinutes());
-                    fimPeriodo = timestampRef;
-                } catch (DateTimeParseException ex) {
-                    try {
-                        DateTimeFormatter fmtSemSegundos = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-                        LocalDateTime timestampRef = LocalDateTime.parse(timestamp, fmtSemSegundos);
-                        inicioPeriodo = timestampRef.minusMinutes(AppConfig.getTimeWindowMinutes());
-                        fimPeriodo = timestampRef;
-                    } catch (DateTimeParseException ex2) {
-                        LocalDateTime agora = LocalDateTime.now();
-                        inicioPeriodo = agora.minusMinutes(AppConfig.getTimeWindowMinutes());
-                        fimPeriodo = agora;
-                    }
-                }
-            } else {
-                LocalDateTime agora = LocalDateTime.now();
-                inicioPeriodo = agora.minusMinutes(AppConfig.getTimeWindowMinutes());
-                fimPeriodo = agora;
-            }
-
-            if (regiaoId == null) {
-                return registroVelocidadeRepository.findByDataBetweenAndTipoVeiculo(inicioPeriodo, fimPeriodo, TipoVeiculo.ONIBUS);
-            } else {
-                return registroVelocidadeRepository.findByDataBetweenAndRegiaoAndTipoVeiculo(inicioPeriodo, fimPeriodo, regiaoId, TipoVeiculo.ONIBUS);
-            }
-        }
-
     @Override
     public void associarAEvento(Long indicadorId, Long eventoId) {
         Indicador i = repository.findById(indicadorId).orElseThrow();
