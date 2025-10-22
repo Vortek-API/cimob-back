@@ -96,6 +96,33 @@ public class IndicadorServiceImpl implements IndicadorService {
     }
 
     @Override
+    public Indicador obterPorMnemonicoRegiao(IndicadorMnemonico mnemonico, Long regiaoId, String timestamp) {
+        Regiao regiao = regiaoService.buscarPorId(regiaoId);
+        if (regiao == null) {
+            throw new RuntimeException("Região não encontrada com ID: " + regiaoId);
+        }
+        
+        Indicador indicador = repository.findByMnemonico(mnemonico);
+
+        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
+
+        indicador = calcularValorIndicadoresComRegistros(indicador, registros);
+
+        return indicador;
+    }
+
+    @Override
+    public Indicador obterPorMnemonico(IndicadorMnemonico mnemonico, String timestamp) {
+        Indicador indicador = repository.findByMnemonico(mnemonico);
+
+        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(null, timestamp);
+
+        indicador = calcularValorIndicadoresComRegistros(indicador, registros);
+
+        return indicador;
+    }
+
+    @Override
     public void associarAEvento(Long indicadorId, Long eventoId) {
         Indicador i = repository.findById(indicadorId).orElseThrow();
         Evento e = eventoRepository.findById(eventoId).orElseThrow();

@@ -1,11 +1,14 @@
 package fatec.vortek.cimob.presentation.controller;
 
 import fatec.vortek.cimob.application.service.IndicadorServiceImpl;
+import fatec.vortek.cimob.domain.enums.IndicadorMnemonico;
 import fatec.vortek.cimob.domain.model.Evento;
 import fatec.vortek.cimob.domain.model.Indicador;
 import fatec.vortek.cimob.presentation.dto.request.IndicadorRequestDTO;
 import fatec.vortek.cimob.presentation.dto.response.IndicadorResponseDTO;
 import lombok.RequiredArgsConstructor;
+
+import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +58,22 @@ public class IndicadorController {
                 .map(i -> new IndicadorResponseDTO(i.getIndicadorId(), i.getNome(), i.getValor(), i.getMnemonico(), i.getDescricao(), null))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(list);
+    }
+
+    @GetMapping
+    public ResponseEntity<IndicadorResponseDTO> obterPorMnemonico(
+                                    @RequestParam IndicadorMnemonico mnemonico, 
+                                    @RequestParam(required = false) Long regiaoId,
+                                    @RequestParam(required = false) String timestamp) {
+
+        Indicador indicador;
+        if (regiaoId != null) {
+            indicador = service.obterPorMnemonicoRegiao(mnemonico, regiaoId, timestamp);
+        } else {
+            indicador = service.obterPorMnemonico(mnemonico, timestamp);
+        }
+        
+        return ResponseEntity.ok(new IndicadorResponseDTO(indicador.getIndicadorId(), indicador.getNome(), indicador.getValor(), indicador.getMnemonico(), indicador.getDescricao(), null));
     }
 
     @GetMapping("/indices-criticos")
