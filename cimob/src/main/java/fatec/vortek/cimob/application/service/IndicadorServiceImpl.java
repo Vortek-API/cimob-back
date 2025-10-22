@@ -10,7 +10,6 @@ import fatec.vortek.cimob.domain.service.IndicadorService;
 import fatec.vortek.cimob.domain.service.RegiaoService;
 import fatec.vortek.cimob.infrastructure.repository.IndicadorRepository;
 import fatec.vortek.cimob.infrastructure.repository.EventoRepository;
-import fatec.vortek.cimob.infrastructure.repository.RadarRepository;
 import fatec.vortek.cimob.infrastructure.repository.RegistroVelocidadeRepository;
 import fatec.vortek.cimob.infrastructure.config.AppConfig;
 import fatec.vortek.cimob.presentation.dto.response.IndiceCriticoResponseDTO;
@@ -31,10 +30,7 @@ public class IndicadorServiceImpl implements IndicadorService {
     private final IndicadorRepository repository;
     private final EventoRepository eventoRepository;
     private final RegiaoService regiaoService;
-    private final RadarRepository radarRepository;
     private final RegistroVelocidadeRepository registroVelocidadeRepository;
-
-    private final RadarServiceImpl radarService;
 
     @Override
     public Indicador criar(Indicador indicador) {
@@ -65,10 +61,13 @@ public class IndicadorServiceImpl implements IndicadorService {
     
     @Override
     public List<Indicador> listarTodos(String timestamp) {
-        List<Indicador> indicadores = repository.findAll();
-        indicadores.forEach(indicador -> {
-            indicador = calcularValorIndicadores(indicador, timestamp);
-        });
+        List<Indicador> indicadores = repository.findAll().stream()
+                .filter(ind -> !"S".equals(ind.getDeletado()))
+                .collect(Collectors.toList());
+
+        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(null, timestamp);
+
+        indicadores.forEach(indicador -> calcularValorIndicadoresComRegistros(indicador, registros));
 
         return indicadores;
     }
@@ -89,9 +88,9 @@ public class IndicadorServiceImpl implements IndicadorService {
                 .filter(indicador -> !"S".equals(indicador.getDeletado()))
                 .collect(Collectors.toList());
 
-        todosIndicadores.forEach(indicador -> {
-            calcularValorIndicadoresPorRegiao(indicador, regiaoId, timestamp);
-        });
+        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
+
+        todosIndicadores.forEach(indicador -> calcularValorIndicadoresComRegistros(indicador, registros));
 
         return todosIndicadores;
     }
@@ -187,36 +186,39 @@ public class IndicadorServiceImpl implements IndicadorService {
     }
     
     public Indicador calcularValorIndicadoresPorRegiao(Indicador indicador, Long regiaoId, String timestamp) {
+        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
+        return calcularValorIndicadoresComRegistros(indicador, registros);
+    }
+
+    private Indicador calcularValorIndicadoresComRegistros(Indicador indicador, List<RegistroVelocidade> registros) {
         if (indicador.getMnemonico() == IndicadorMnemonico.EXCESSO_VELOCIDADE) {
-            indicador.setValor(calcularExcessoVelocidade(regiaoId, timestamp));
+            indicador.setValor(calcularExcessoVelocidadeComRegistros(registros));
         } else if (indicador.getMnemonico() == IndicadorMnemonico.VARIABILIDADE_VELOCIDADE) {
-            indicador.setValor(calcularVariabilidadeVelocidade(regiaoId, timestamp));
+            indicador.setValor(calcularVariabilidadeVelocidadeComRegistros(registros));
         } else if (indicador.getMnemonico() == IndicadorMnemonico.VEICULOS_LENTOS) {
-            indicador.setValor(calcularVeiculosLentos(regiaoId, timestamp));
+            indicador.setValor(calcularVeiculosLentosComRegistros(registros));
         } else {
             indicador.setValor(0.0);
         }
         return indicador;
     }
-    
-    private Double calcularExcessoVelocidade(Long regiaoId) {
-        return calcularExcessoVelocidade(regiaoId, null);
-    }
-    
-    private Double calcularExcessoVelocidade(Long regiaoId, String timestamp) {
-        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
-        
-        if (registros.isEmpty()) {
+
+    private Double calcularExcessoVelocidadeComRegistros(List<RegistroVelocidade> registros) {
+        List<RegistroVelocidade> regs = registros.stream()
+                .filter(r -> r.getVelocidadeRegistrada() != null && r.getRadar() != null && r.getRadar().getVelocidadePermitida() != null)
+                .collect(Collectors.toList());
+
+        if (regs.isEmpty()) {
             return 1.0;
         }
-        
-        long totalRegistros = registros.size();
-        long excessos = registros.stream()
+
+        long totalRegistros = regs.size();
+        long excessos = regs.stream()
                 .filter(registro -> registro.getVelocidadeRegistrada() > registro.getRadar().getVelocidadePermitida())
                 .count();
-        
+
         double percentualExcessos = (double) excessos / totalRegistros * 100;
-        
+
         if (percentualExcessos <= 10) {
             return 1.0;
         } else if (percentualExcessos <= 25) {
@@ -225,29 +227,24 @@ public class IndicadorServiceImpl implements IndicadorService {
             return 3.0;
         }
     }
-    
-    private Double calcularVariabilidadeVelocidade(Long regiaoId) {
-        return calcularVariabilidadeVelocidade(regiaoId, null);
-    }
-    
-    private Double calcularVariabilidadeVelocidade(Long regiaoId, String timestamp) {
-        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
-        
-        if (registros.size() < 2) {
+
+    private Double calcularVariabilidadeVelocidadeComRegistros(List<RegistroVelocidade> registros) {
+        List<Integer> velocidades = registros.stream()
+                .map(RegistroVelocidade::getVelocidadeRegistrada)
+                .filter(v -> v != null)
+                .collect(Collectors.toList());
+
+        if (velocidades.size() < 2) {
             return 1.0;
         }
 
-        List<Integer> velocidades = registros.stream()
-                .map(RegistroVelocidade::getVelocidadeRegistrada)
-                .collect(Collectors.toList());
-        
         double media = velocidades.stream().mapToInt(Integer::intValue).average().orElse(0.0);
         double variancia = velocidades.stream()
                 .mapToDouble(v -> Math.pow(v - media, 2))
                 .average().orElse(0.0);
-        
+
         double desvioPadrao = Math.sqrt(variancia);
-        
+
         if (desvioPadrao <= 5) {
             return 1.0;
         } else if (desvioPadrao <= 15) {
@@ -256,29 +253,27 @@ public class IndicadorServiceImpl implements IndicadorService {
             return 3.0;
         }
     }
-    
-    private Double calcularVeiculosLentos(Long regiaoId) {
-        return calcularVeiculosLentos(regiaoId, null);
-    }
-    
-    private Double calcularVeiculosLentos(Long regiaoId, String timestamp) {
-        List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
-        
-        if (registros.isEmpty()) {
+
+    private Double calcularVeiculosLentosComRegistros(List<RegistroVelocidade> registros) {
+        List<RegistroVelocidade> regs = registros.stream()
+                .filter(r -> r.getVelocidadeRegistrada() != null && r.getRadar() != null && r.getRadar().getVelocidadePermitida() != null)
+                .collect(Collectors.toList());
+
+        if (regs.isEmpty()) {
             return 1.0;
         }
-        
-        long totalRegistros = registros.size();
-        long veiculosLentos = registros.stream()
+
+        long totalRegistros = regs.size();
+        long veiculosLentos = regs.stream()
                 .filter(registro -> {
                     int velocidadePermitida = registro.getRadar().getVelocidadePermitida();
                     int velocidadeRegistrada = registro.getVelocidadeRegistrada();
                     return velocidadeRegistrada < (velocidadePermitida * 0.5);
                 })
                 .count();
-        
+
         double percentualVeiculosLentos = (double) veiculosLentos / totalRegistros * 100;
-        
+
         if (percentualVeiculosLentos <= 5) {
             return 1.0;
         } else if (percentualVeiculosLentos <= 15) {
@@ -288,9 +283,7 @@ public class IndicadorServiceImpl implements IndicadorService {
         }
     }
     
-    private List<RegistroVelocidade> buscarRegistrosPorRegiao(Long regiaoId) {
-        return buscarRegistrosPorRegiao(regiaoId, null);
-    }
+    
     
     private List<RegistroVelocidade> buscarRegistrosPorRegiao(Long regiaoId, String timestamp) {
         LocalDateTime inicioPeriodo;

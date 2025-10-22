@@ -43,6 +43,52 @@ CREATE TABLE Radar (
         REFERENCES Regiao(regiaoId)
 );
 
+--Ponto (Parada de Ônibus)
+CREATE TABLE Ponto (
+    pontoId NUMBER(20) PRIMARY KEY,
+    regiaoId NUMBER(20),
+    latitude NUMBER(10,7) NOT NULL,
+    longitude NUMBER(10,7) NOT NULL,
+
+    addr_city VARCHAR2(100) DEFAULT NULL,
+    addr_street VARCHAR2(255) DEFAULT NULL,
+    addr_suburb VARCHAR2(100) DEFAULT NULL,
+
+    bench CHAR(1) DEFAULT NULL,
+    bin CHAR(1) DEFAULT NULL,
+    bus CHAR(1) DEFAULT NULL,
+    check_date_shelter DATE DEFAULT NULL,
+    covered CHAR(1) DEFAULT NULL,
+    departures_board VARCHAR2(255) DEFAULT NULL,
+    highway VARCHAR2(50) DEFAULT NULL,
+    lit CHAR(1) DEFAULT NULL,
+    local_ref VARCHAR2(100) DEFAULT NULL,
+    name VARCHAR2(255) DEFAULT NULL,
+    name_en VARCHAR2(255) DEFAULT NULL,
+    name_pt VARCHAR2(255) DEFAULT NULL,
+    name_signed CHAR(1) DEFAULT NULL,
+    network VARCHAR2(100) DEFAULT NULL,
+    network_short VARCHAR2(50) DEFAULT NULL,
+    network_wikidata VARCHAR2(100) DEFAULT NULL,
+    network_wikipedia VARCHAR2(100) DEFAULT NULL,
+    noname CHAR(1) DEFAULT NULL,
+    note VARCHAR2(4000) DEFAULT NULL,
+    opening_hours VARCHAR2(100) DEFAULT NULL,
+    operator VARCHAR2(100) DEFAULT NULL,
+    outdoor_seating CHAR(1) DEFAULT NULL,
+    public_transport VARCHAR2(50) DEFAULT NULL,
+    public_transport_version NUMBER DEFAULT NULL,
+    ref NUMBER DEFAULT NULL,
+    route_ref NUMBER DEFAULT NULL,
+    shelter CHAR(1) DEFAULT NULL,
+    source VARCHAR2(255) DEFAULT NULL,
+    tactile_paving CHAR(1) DEFAULT NULL,
+    wheelchair CHAR(1) DEFAULT NULL,
+
+    CONSTRAINT fk_radar_regiao FOREIGN KEY (regiaoId)
+        REFERENCES Regiao(regiaoId)
+);
+
 -- Registro de Velocidade
 CREATE TABLE RegistroVelocidade (
     registroVelocidadeId NUMBER PRIMARY KEY,
@@ -137,6 +183,7 @@ CREATE SEQUENCE seq_indicador START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_evento START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_indicadores_timeline START WITH 1 INCREMENT BY 1;
 CREATE SEQUENCE seq_eventos_timeline START WITH 1 INCREMENT BY 1;
+CREATE SEQUENCE seq_ponto START WITH 1 INCREMENT BY 1;
 
 -- ==========================
 -- TRIGGERS DE AUTO-INCREMENTO
@@ -221,6 +268,16 @@ BEGIN
 END;
 /
 
+CREATE OR REPLACE TRIGGER trg_ponto_pk
+BEFORE INSERT ON Ponto
+FOR EACH ROW
+BEGIN
+    IF :NEW.pontoId IS NULL THEN
+        SELECT seq_ponto.NEXTVAL INTO :NEW.pontoId FROM dual;
+    END IF;
+END;
+/
+
 -- ==========================
 -- TRIGGERS DE AUDITORIA
 -- ==========================
@@ -281,4 +338,7 @@ END;
 CREATE INDEX idx_radar_regiao ON Radar(regiaoId);
 CREATE INDEX idx_registro_radar ON RegistroVelocidade(radarId);
 CREATE INDEX idx_registro_regiao ON RegistroVelocidade(regiaoId);
+CREATE INDEX idx_registro_data_deletado ON RegistroVelocidade("data", deletado);
+CREATE INDEX idx_registro_regiao_data_deletado ON RegistroVelocidade(regiaoId, "data", deletado);
 CREATE INDEX idx_evento_indicador ON Evento(indicadorId);
+CREATE INDEX idx_ponto_regiao ON Ponto(regiaoId);
