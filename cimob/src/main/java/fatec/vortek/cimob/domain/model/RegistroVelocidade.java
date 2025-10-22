@@ -8,6 +8,9 @@ import org.hibernate.annotations.SQLRestriction;
 
 import java.time.LocalDateTime;
 
+import fatec.vortek.cimob.domain.converter.TipoVeiculoConverter;
+import fatec.vortek.cimob.domain.enums.TipoVeiculo;
+
 @Entity
 @Table(name = "RegistroVelocidade")
 @Data
@@ -30,8 +33,9 @@ public class RegistroVelocidade {
     @JoinColumn(name =  "regiaoId")
     private Regiao regiao;
 
-    @Column(length = 50)
-    private String tipoVeiculo;
+    @Column(name = "tipoVeiculo")
+    @Convert(converter = TipoVeiculoConverter.class)
+    private TipoVeiculo tipoVeiculo;
 
     @Column
     private Integer velocidadeRegistrada;

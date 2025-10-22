@@ -342,3 +342,4 @@ CREATE INDEX idx_registro_data_deletado ON RegistroVelocidade("data", deletado);
 CREATE INDEX idx_registro_regiao_data_deletado ON RegistroVelocidade(regiaoId, "data", deletado);
 CREATE INDEX idx_evento_indicador ON Evento(indicadorId);
 CREATE INDEX idx_ponto_regiao ON Ponto(regiaoId);
+CREATE INDEX idx_registro_tipo_veiculo ON RegistroVelocidade(tipoVeiculo);
