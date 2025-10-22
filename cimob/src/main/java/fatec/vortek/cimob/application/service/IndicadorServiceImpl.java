@@ -6,7 +6,6 @@ import fatec.vortek.cimob.domain.model.Indicador;
 import fatec.vortek.cimob.domain.model.Regiao;
 import fatec.vortek.cimob.domain.model.Radar;
 import fatec.vortek.cimob.domain.model.RegistroVelocidade;
-import fatec.vortek.cimob.domain.enums.TipoVeiculo;
 import fatec.vortek.cimob.domain.service.IndicadorService;
 import fatec.vortek.cimob.domain.service.RegiaoService;
 import fatec.vortek.cimob.infrastructure.repository.IndicadorRepository;
