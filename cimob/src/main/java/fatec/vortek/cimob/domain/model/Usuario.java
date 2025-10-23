@@ -12,36 +12,30 @@ import lombok.*;
 public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "USUARIOID")
+    @Column(name = "usuarioId")
     private Long usuarioId;
 
-    @Column(name = "CPF", nullable = false, length = 11)
+    @Column(name = "cpf", nullable = false, length = 11)
     private String cpf;
 
-    @Column(name = "NOME", nullable = false, length = 100)
+    @Column(name = "nomeCompleto", nullable = false, length = 100)
     private String nome;
 
-    @Column(name = "SOBRENOME", nullable = false, length = 100)
-    private String sobreNome;
-
-    @Column(name = "USERNAME", nullable = false, length = 50, unique = true)
-    private String userName; // login
-
-    @Column(name = "EMAIL", nullable = false, length = 150)
+    @Column(name = "email", nullable = false, length = 150)
     private String email;
 
-    @Column(name = "CARGO", nullable = false, length = 100)
+    @Column(name = "cargo", nullable = false, length = 100)
     private String cargo;
 
-    @Column(name = "DELETADO", nullable = false, length = 1)
+    @Column(name = "deletado", nullable = false, length = 1)
     private String deletado = "N";
 
-    @Column(name = "SENHA", nullable = false, length = 255)
+    @Column(name = "senha", nullable = false, length = 255)
     private String senha; 
 
-    @Column(name = "REFRESH_TOKEN") 
+    @Column(name = "refreshToken")
     private String refreshToken;
 
-    @Column(name = "ACCESS_TOKEN")
+    @Column(name = "accessToken")
     private String accessToken;
 }

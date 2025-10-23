@@ -19,8 +19,8 @@ public class AutenticacaoController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO request) {
         try {
-            var auth = authService.autenticar(request.getUserName(), request.getSenha());
-            return ResponseEntity.ok(new LoginResponseDTO(auth.accessToken(), auth.refreshToken()));
+            var auth = authService.autenticar(request.getEmail(), request.getSenha());
+            return ResponseEntity.ok(new LoginResponseDTO(auth.accessToken()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).body(e.getMessage());
         }
@@ -30,7 +30,7 @@ public class AutenticacaoController {
     public ResponseEntity<?> refresh(@RequestParam String refreshToken) {
         try {
             var auth = authService.refreshToken(refreshToken);
-            return ResponseEntity.ok(new LoginResponseDTO(auth.accessToken(), auth.refreshToken()));
+            return ResponseEntity.ok(new LoginResponseDTO(auth.accessToken()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).body(e.getMessage());
         }
