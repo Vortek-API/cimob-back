@@ -37,6 +37,7 @@ public class AutenticacaoServiceImpl {
         String refreshToken = jwtUtil.generateRefreshToken(usuario.getEmail());
 
         usuario.setRefreshToken(refreshToken);
+        usuario.setAccessToken(accessToken);
         usuarioRepository.save(usuario);
 
         System.out.println("[LOGIN] Login bem-sucedido para: " + email);
@@ -56,6 +57,7 @@ public class AutenticacaoServiceImpl {
         String newRefreshToken = jwtUtil.generateRefreshToken(usuario.getEmail());
 
         usuario.setRefreshToken(newRefreshToken);
+        usuario.setAccessToken(accessToken);
         usuarioRepository.save(usuario);
 
         System.out.println("[REFRESH] Token atualizado para usuário: " + usuario.getEmail());
@@ -71,7 +73,7 @@ public class AutenticacaoServiceImpl {
                     return new RuntimeException("Usuário não encontrado");
                 });
 
-        usuario.setRefreshToken(null);
+        usuario.setAccessToken(null);
         usuarioRepository.save(usuario);
 
         System.out.println("[LOGOUT] Logout realizado: " + email);
