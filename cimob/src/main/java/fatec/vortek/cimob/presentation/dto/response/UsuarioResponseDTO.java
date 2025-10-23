@@ -12,7 +12,5 @@ public class UsuarioResponseDTO {
     private String cargo;
     private String cpf;
     private String email;
-    private String sobreNome;
     private String deletado;
-    private String userName;
 }

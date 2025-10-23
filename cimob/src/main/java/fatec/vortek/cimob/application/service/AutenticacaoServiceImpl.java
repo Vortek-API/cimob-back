@@ -17,30 +17,31 @@ public class AutenticacaoServiceImpl {
     private final JwtUtilConfig jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public record AuthResponse(String accessToken, String refreshToken) {}
+    public record AuthResponse(String accessToken) {}
 
-    public AuthResponse autenticar(String userName, String senha) {
-        System.out.println("[LOGIN] Tentativa de login: " + userName);
+    public AuthResponse autenticar(String email, String senha) {
+        System.out.println("[LOGIN] Tentativa de login: " + email);
 
-        Usuario usuario = usuarioRepository.findByUserName(userName)
+        Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> {
-                    System.out.println("[LOGIN] Usuário não encontrado: " + userName);
+                    System.out.println("[LOGIN] Usuário não encontrado: " + email);
                     return new RuntimeException("Usuário não encontrado");
                 });
 
         if (!passwordEncoder.matches(senha, usuario.getSenha())) {
-            System.out.println("[LOGIN] Senha incorreta para usuário: " + userName);
+            System.out.println("[LOGIN] Senha incorreta para usuário: " + email);
             throw new RuntimeException("Senha incorreta");
         }
 
-        String accessToken = jwtUtil.generateToken(usuario.getUserName());
-        String refreshToken = jwtUtil.generateRefreshToken(usuario.getUserName());
+        String accessToken = jwtUtil.generateToken(usuario.getEmail());
+        String refreshToken = jwtUtil.generateRefreshToken(usuario.getEmail());
 
         usuario.setRefreshToken(refreshToken);
+        usuario.setAccessToken(accessToken);
         usuarioRepository.save(usuario);
 
-        System.out.println("[LOGIN] Login bem-sucedido para: " + userName);
-        return new AuthResponse(accessToken, refreshToken);
+        System.out.println("[LOGIN] Login bem-sucedido para: " + email);
+        return new AuthResponse(accessToken);
     }
 
     public AuthResponse refreshToken(String refreshToken) {
@@ -52,28 +53,29 @@ public class AutenticacaoServiceImpl {
                     return new RuntimeException("Refresh token inválido");
                 });
 
-        String accessToken = jwtUtil.generateToken(usuario.getUserName());
-        String newRefreshToken = jwtUtil.generateRefreshToken(usuario.getUserName());
+        String accessToken = jwtUtil.generateToken(usuario.getEmail());
+        String newRefreshToken = jwtUtil.generateRefreshToken(usuario.getEmail());
 
         usuario.setRefreshToken(newRefreshToken);
+        usuario.setAccessToken(accessToken);
         usuarioRepository.save(usuario);
 
-        System.out.println("[REFRESH] Token atualizado para usuário: " + usuario.getUserName());
-        return new AuthResponse(accessToken, newRefreshToken);
+        System.out.println("[REFRESH] Token atualizado para usuário: " + usuario.getEmail());
+        return new AuthResponse(accessToken);
     }
 
-    public void logout(String userName) {
-        System.out.println("[LOGOUT] Tentativa de logout: " + userName);
+    public void logout(String email) {
+        System.out.println("[LOGOUT] Tentativa de logout: " + email);
 
-        Usuario usuario = usuarioRepository.findByUserName(userName)
+        Usuario usuario = usuarioRepository.findByEmail(email)
                 .orElseThrow(() -> {
-                    System.out.println("[LOGOUT] Usuário não encontrado: " + userName);
+                    System.out.println("[LOGOUT] Usuário não encontrado: " + email);
                     return new RuntimeException("Usuário não encontrado");
                 });
 
-        usuario.setRefreshToken(null);
+        usuario.setAccessToken(null);
         usuarioRepository.save(usuario);
 
-        System.out.println("[LOGOUT] Logout realizado: " + userName);
+        System.out.println("[LOGOUT] Logout realizado: " + email);
     }
 }

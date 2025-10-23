@@ -9,8 +9,6 @@ import lombok.*;
 public class UsuarioRequestDTO {
     private String cpf;
     private String nome;
-    private String sobreNome;
-    private String userName;
     private String email;
     private String cargo;
     private String senha; 

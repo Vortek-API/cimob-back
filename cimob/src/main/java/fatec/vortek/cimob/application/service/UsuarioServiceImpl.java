@@ -30,8 +30,6 @@ public class UsuarioServiceImpl implements UsuarioService {
         novoRegistro.setCargo(dto.getCargo());
         novoRegistro.setDeletado(dto.getDeletado());
         novoRegistro.setEmail(dto.getEmail());
-        novoRegistro.setSobreNome(dto.getSobreNome());
-        novoRegistro.setUserName(dto.getUserName());
 
         // 🚀 Criptografa a senha antes de salvar
         String senhaCriptografada = passwordEncoder.encode(dto.getSenha());
@@ -81,9 +79,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuario.getCargo(),
                 usuario.getCpf(),
                 usuario.getEmail(),
-                usuario.getSobreNome(),
-                usuario.getDeletado(),
-                usuario.getUserName()
+                usuario.getDeletado()
         );
     }
 }

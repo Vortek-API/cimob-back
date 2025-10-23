@@ -1,6 +1,7 @@
 package fatec.vortek.cimob.infrastructure.config;
 
 import java.io.IOException;
+import java.util.List;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -35,7 +36,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String username = jwtUtil.getUserNameFromToken(token);
 
             UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(username, null, null);
+            new UsernamePasswordAuthenticationToken(username, null, List.of());
 
             authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authentication);
