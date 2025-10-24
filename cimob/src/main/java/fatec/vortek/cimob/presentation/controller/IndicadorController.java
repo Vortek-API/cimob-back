@@ -70,7 +70,7 @@ public class IndicadorController {
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping
+    @GetMapping("/mnemonico/{mnemonico}")
     public ResponseEntity<IndicadorResponseDTO> obterPorMnemonico(
                                     @RequestParam IndicadorMnemonico mnemonico, 
                                     @RequestParam(required = false) Long regiaoId,
