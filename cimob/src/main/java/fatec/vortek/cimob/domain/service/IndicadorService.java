@@ -1,5 +1,6 @@
 package fatec.vortek.cimob.domain.service;
 
+import fatec.vortek.cimob.domain.enums.IndicadorMnemonico;
 import fatec.vortek.cimob.domain.model.Evento;
 import fatec.vortek.cimob.domain.model.Indicador;
 import fatec.vortek.cimob.presentation.dto.response.IndiceCriticoResponseDTO;
@@ -20,4 +21,8 @@ public interface IndicadorService {
     List<Evento> listarEventos(Long indicadorId);
     java.util.List<IndiceCriticoResponseDTO> listarTopExcessosVelocidade(Long regiaoId);
     java.util.List<IndiceCriticoResponseDTO> listarTopExcessosVelocidade(Long regiaoId, String timestamp);
+    Indicador obterPorMnemonicoRegiao(IndicadorMnemonico mnemonico, Long regiaoId, String timestamp);
+    Indicador obterPorMnemonico(IndicadorMnemonico mnemonico, String timestamp);
+    List<Indicador> listarIndicadoresSemCalculo();
+    void atualizaSelecionados(List<Long> indicadoresId);
 }
