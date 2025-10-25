@@ -3,7 +3,7 @@ package fatec.vortek.cimob.domain.enums;
 public enum CargoUsuario {
     ADMIN("ADMIN"),
     INDEFINIDO("INDEFINIDO"),
-    USUARIO("USUARIO    ");
+    USUARIO("USUARIO");
 
     private final String descricao;
 

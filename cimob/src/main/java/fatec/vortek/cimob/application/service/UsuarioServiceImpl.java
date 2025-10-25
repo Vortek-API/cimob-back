@@ -13,6 +13,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +26,7 @@ public class UsuarioServiceImpl implements UsuarioService {
 
     @Override
     public UsuarioResponseDTO criar(UsuarioRequestDTO dto) {
+        
         if (repository.existsByCpf(dto.getCpf())) {
             throw new RuntimeException("Usuário já existe com CPF: " + dto.getCpf());
         }
@@ -33,21 +36,15 @@ public class UsuarioServiceImpl implements UsuarioService {
         novoRegistro.setCargo(dto.getCargo());
         novoRegistro.setDeletado(dto.getDeletado());
         novoRegistro.setEmail(dto.getEmail());
+        novoRegistro.setCpf(dto.getCpf());
 
-        // 🚀 Criptografa a senha antes de salvar
-        String senhaCriptografada = passwordEncoder.encode(dto.getSenha());
+        String senhaCriptografada = passwordEncoder.encode(
+            Objects.requireNonNullElse(dto.getSenha(), UUID.randomUUID().toString())
+        );
         novoRegistro.setSenha(senhaCriptografada);
 
         Usuario registroSalvo = repository.save(novoRegistro);
         return toResponseDTO(registroSalvo);
-    }
-
-    @Override
-    public Usuario atualizar(Usuario usuario) {
-        if (!repository.existsById(usuario.getUsuarioId())) {
-            throw new RuntimeException("Usuário não encontrado com o ID: " + usuario.getUsuarioId());
-        }
-        return repository.save(usuario);
     }
 
     @Override
@@ -74,6 +71,26 @@ public class UsuarioServiceImpl implements UsuarioService {
                 .filter(usuario -> !"S".equals(usuario.getDeletado()))
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public UsuarioResponseDTO atualizar(Long id, UsuarioRequestDTO dto) {
+        Usuario usuarioExistente = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado com o ID: " + id));
+
+        usuarioExistente.setNome(dto.getNome());
+        usuarioExistente.setCargo(dto.getCargo());
+        usuarioExistente.setEmail(dto.getEmail());
+        usuarioExistente.setCpf(dto.getCpf());
+
+        // Se a senha for fornecida no DTO, atualize-a
+        if (dto.getSenha() != null && !dto.getSenha().isEmpty()) {
+            String senhaCriptografada = passwordEncoder.encode(dto.getSenha());
+            usuarioExistente.setSenha(senhaCriptografada);
+        }
+
+        Usuario usuarioAtualizado = repository.save(usuarioExistente);
+        return toResponseDTO(usuarioAtualizado);
     }
 
     private UsuarioResponseDTO toResponseDTO(Usuario usuario) {
