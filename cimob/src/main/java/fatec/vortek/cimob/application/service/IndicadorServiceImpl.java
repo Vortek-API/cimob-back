@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.Comparator;
@@ -418,5 +419,34 @@ public class IndicadorServiceImpl implements IndicadorService {
 
         return horarioPicoPorRadar;
     }
+
+    private Map<String, Double> calcularVariacaoVelocidadePorPeriodo() {
+        List<Radar> radares = radarRepository.findAll();
+        Map<String, Double> variacaoPorRadar = new HashMap<>();
+
+        for (Radar radar : radares) {
+            List<Integer> velocidades = registroVelocidadeRepository.findByRadarId(radar.getRadarId()).stream()
+                    .map(RegistroVelocidade::getVelocidadeRegistrada)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            if (velocidades.isEmpty()) {
+                variacaoPorRadar.put(radar.getRadarId(), 0.0);
+                continue;
+            }
+
+            double media = velocidades.stream().mapToInt(Integer::intValue).average().orElse(0.0);
+            double variancia = velocidades.stream()
+                    .mapToDouble(v -> Math.pow(v - media, 2))
+                    .average().orElse(0.0);
+            double desvioPadrao = Math.sqrt(variancia);
+
+            double variacao = (media != 0) ? desvioPadrao / media : 0.0;
+            variacaoPorRadar.put(radar.getRadarId(), variacao);
+        }
+
+        return variacaoPorRadar;
+    }
+
 
 }
