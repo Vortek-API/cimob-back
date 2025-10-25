@@ -104,6 +104,7 @@ public class IndicadorServiceImpl implements IndicadorService {
         
         List<Indicador> todosIndicadores = repository.findAll().stream()
                 .filter(indicador -> !"S".equals(indicador.getDeletado()))
+                .filter(indicador -> !"S".equals(indicador.getOculto()))
                 .collect(Collectors.toList());
 
         List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
