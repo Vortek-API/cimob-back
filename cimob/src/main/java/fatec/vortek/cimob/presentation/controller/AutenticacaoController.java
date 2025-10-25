@@ -4,9 +4,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import fatec.vortek.cimob.application.service.AutenticacaoServiceImpl;
+import fatec.vortek.cimob.application.service.UsuarioServiceImpl;
 import fatec.vortek.cimob.presentation.dto.request.LoginRequestDTO;
+import fatec.vortek.cimob.presentation.dto.request.UsuarioRequestDTO;
 import fatec.vortek.cimob.presentation.dto.response.LoginResponseDTO;
-
+import fatec.vortek.cimob.presentation.dto.response.UsuarioResponseDTO;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -15,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class AutenticacaoController {
 
     private final AutenticacaoServiceImpl authService;
+    private final UsuarioServiceImpl usuarioService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequestDTO request) {
@@ -33,6 +36,16 @@ public class AutenticacaoController {
             return ResponseEntity.ok(new LoginResponseDTO(auth.accessToken()));
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/cadastrar")
+    public ResponseEntity<?> cadastro(@RequestBody UsuarioRequestDTO request) {
+        try {
+            var usuario = usuarioService.criar(request);
+            return ResponseEntity.ok(usuario);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
         }
     }
 
