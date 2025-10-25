@@ -71,6 +71,7 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     public List<UsuarioResponseDTO> listarTodos() {
         return repository.findAll().stream()
+                .filter(usuario -> !"S".equals(usuario.getDeletado()))
                 .map(this::toResponseDTO)
                 .collect(Collectors.toList());
     }

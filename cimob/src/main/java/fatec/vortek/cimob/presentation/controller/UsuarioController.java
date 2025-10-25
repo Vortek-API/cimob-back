@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import fatec.vortek.cimob.domain.enums.CargoUsuario;
 import fatec.vortek.cimob.domain.service.UsuarioService;
 import fatec.vortek.cimob.presentation.dto.request.UsuarioRequestDTO;
 import fatec.vortek.cimob.presentation.dto.response.UsuarioResponseDTO;
@@ -51,10 +52,10 @@ public class UsuarioController {
     }
 
     @GetMapping("/cargo/{email}")
-    public ResponseEntity<String> getCargo(@PathVariable String email) {
+    public ResponseEntity<CargoUsuario> getCargo(@PathVariable String email) {
         UsuarioResponseDTO usuario = service.buscarPorEmail(email);
         if (usuario == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(CargoUsuario.INDEFINIDO);
         }
         System.out.println("Cargo do usuário: " + usuario.getCargo());
         return ResponseEntity.ok(usuario.getCargo()); // Retorna apenas o cargo
