@@ -100,7 +100,7 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuario.getCargo(),
                 usuario.getCpf(),
                 usuario.getEmail(),
-                usuario.getDeletado()
+                usuario.getDeletado().equals("S")
         );
     }
 @Override
