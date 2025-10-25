@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import fatec.vortek.cimob.application.service.AutenticacaoServiceImpl;
 import fatec.vortek.cimob.application.service.UsuarioServiceImpl;
+import fatec.vortek.cimob.domain.enums.CargoUsuario;
 import fatec.vortek.cimob.presentation.dto.request.LoginRequestDTO;
 import fatec.vortek.cimob.presentation.dto.request.UsuarioRequestDTO;
 import fatec.vortek.cimob.presentation.dto.response.LoginResponseDTO;
@@ -42,6 +43,7 @@ public class AutenticacaoController {
     @PostMapping("/cadastrar")
     public ResponseEntity<?> cadastro(@RequestBody UsuarioRequestDTO request) {
         try {
+            request.setCargo(CargoUsuario.USUARIO);
             var usuario = usuarioService.criar(request);
             return ResponseEntity.ok(usuario);
         } catch (RuntimeException e) {
