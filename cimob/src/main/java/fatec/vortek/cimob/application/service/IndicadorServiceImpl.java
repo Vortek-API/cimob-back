@@ -20,10 +20,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
@@ -391,4 +393,30 @@ public class IndicadorServiceImpl implements IndicadorService {
 
         return fluxoPorRadar;
     }
+
+    private Map<String, LocalTime> calcularHorarioDePico() {
+        List<Radar> radares = radarRepository.findAll();
+        Map<String, LocalTime> horarioPicoPorRadar = new HashMap<>();
+
+        for (Radar radar : radares) {
+            // Agrupa os registros por hora e conta quantos veículos passaram
+            List<RegistroVelocidade> registros = registroVelocidadeRepository.findByRadarId(radar.getRadarId());
+            Map<Integer, Long> contagemPorHora = registros.stream()
+                .filter(r -> r.getDataRegistro() != null)
+                .collect(Collectors.groupingBy(
+                        r -> ((LocalDateTime) r.getDataRegistro()).getHour(),
+                        Collectors.counting()
+                ));
+
+
+            // Obtém a hora com maior contagem
+            Optional<Map.Entry<Integer, Long>> pico = contagemPorHora.entrySet().stream()
+                    .max(Map.Entry.comparingByValue());
+
+            pico.ifPresent(entry -> horarioPicoPorRadar.put(radar.getRadarId(), LocalTime.of(entry.getKey(), 0)));
+        }
+
+        return horarioPicoPorRadar;
+    }
+
 }
