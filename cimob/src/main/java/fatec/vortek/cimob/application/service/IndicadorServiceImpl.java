@@ -448,5 +448,19 @@ public class IndicadorServiceImpl implements IndicadorService {
         return variacaoPorRadar;
     }
 
+    private Map<String, Long> calcularMapaDeFluxo() {
+        List<Radar> radares = radarRepository.findAll();
+        Map<String, Long> fluxoPorLocalizacao = new HashMap<>();
+
+        for (Radar radar : radares) {
+            Long total = registroVelocidadeRepository.countByRadarId(radar.getRadarId());
+            String coordenadas = String.format("(%s, %s)", radar.getLatitude(), radar.getLongitude());
+            fluxoPorLocalizacao.put(coordenadas, total);
+        }
+
+        return fluxoPorLocalizacao;
+    }
+
+
 
 }

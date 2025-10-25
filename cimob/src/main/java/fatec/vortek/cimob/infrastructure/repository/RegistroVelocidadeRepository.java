@@ -48,4 +48,6 @@ public interface RegistroVelocidadeRepository extends JpaRepository<RegistroVelo
        Long countByRadarIdAndDataRegistroBetween(String radarId, LocalDateTime cincoMinAtras, LocalDateTime agora);
 
        List<RegistroVelocidade> findByRadarId(String radarId);
+
+       Long countByRadarId(String radarId);
 }
