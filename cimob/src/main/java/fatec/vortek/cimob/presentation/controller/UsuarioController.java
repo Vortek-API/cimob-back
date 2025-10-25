@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Tag(name = "Usuarios")
 public class UsuarioController {
-    
+
     private final UsuarioService service; // <- usa a interface, não a implementação
 
     @PostMapping
@@ -49,5 +49,15 @@ public class UsuarioController {
         service.deletar(id);
         return ResponseEntity.noContent().build();
     }
-    
+
+    @GetMapping("/cargo/{email}")
+    public ResponseEntity<String> getCargo(@PathVariable String email) {
+        UsuarioResponseDTO usuario = service.buscarPorEmail(email);
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Usuário não encontrado");
+        }
+        System.out.println("Cargo do usuário: " + usuario.getCargo());
+        return ResponseEntity.ok(usuario.getCargo()); // Retorna apenas o cargo
+    }
+
 }
