@@ -12,5 +12,6 @@ public interface UsuarioService {
     List<UsuarioResponseDTO> listarTodos();
     void deletar(Long id);
     Usuario atualizar(Usuario usuario);
+    UsuarioResponseDTO buscarPorEmail(String email);
 
 }

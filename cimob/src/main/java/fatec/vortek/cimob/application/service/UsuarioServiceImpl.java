@@ -5,7 +5,10 @@ import fatec.vortek.cimob.domain.service.UsuarioService;
 import fatec.vortek.cimob.infrastructure.repository.UsuarioRepository;
 import fatec.vortek.cimob.presentation.dto.request.UsuarioRequestDTO;
 import fatec.vortek.cimob.presentation.dto.response.UsuarioResponseDTO;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import org.apache.catalina.mapper.Mapper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -82,4 +85,15 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuario.getDeletado()
         );
     }
+@Override
+public UsuarioResponseDTO buscarPorEmail(String email) {
+    Usuario usuario = repository.findByEmail(email)
+            .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+
+    UsuarioResponseDTO dto = new UsuarioResponseDTO();
+    dto.setNome(usuario.getNome());
+    dto.setEmail(usuario.getEmail());
+    dto.setCargo(usuario.getCargo());
+    return dto;
+}
 }
