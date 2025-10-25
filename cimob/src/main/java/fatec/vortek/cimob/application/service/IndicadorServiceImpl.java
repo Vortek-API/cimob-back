@@ -402,9 +402,9 @@ public class IndicadorServiceImpl implements IndicadorService {
             // Agrupa os registros por hora e conta quantos veículos passaram
             List<RegistroVelocidade> registros = registroVelocidadeRepository.findByRadarId(radar.getRadarId());
             Map<Integer, Long> contagemPorHora = registros.stream()
-                .filter(r -> r.getDataRegistro() != null)
+                .filter(r -> r.getData() != null)
                 .collect(Collectors.groupingBy(
-                        r -> ((LocalDateTime) r.getDataRegistro()).getHour(),
+                        r -> ((LocalDateTime) r.getData()).getHour(),
                         Collectors.counting()
                 ));
 
