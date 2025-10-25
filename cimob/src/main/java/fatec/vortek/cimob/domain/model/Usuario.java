@@ -1,5 +1,7 @@
 package fatec.vortek.cimob.domain.model;
 
+import fatec.vortek.cimob.domain.converter.CargoUsuarioConverter;
+import fatec.vortek.cimob.domain.enums.CargoUsuario;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,7 +27,8 @@ public class Usuario {
     private String email;
 
     @Column(name = "cargo", nullable = false, length = 100)
-    private String cargo;
+    @Convert(converter = CargoUsuarioConverter.class)
+    private CargoUsuario cargo;
 
     @Column(name = "deletado", nullable = false, length = 1)
     private String deletado = "N";

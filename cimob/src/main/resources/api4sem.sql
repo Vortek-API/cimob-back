@@ -283,31 +283,6 @@ END;
 -- TRIGGERS DE AUDITORIA
 -- ==========================
 
--- Indicadores
-CREATE OR REPLACE TRIGGER trg_indicador_log
-AFTER INSERT OR UPDATE OR DELETE ON Indicador
-FOR EACH ROW
-DECLARE
-    v_acao VARCHAR2(20);
-BEGIN
-    IF INSERTING THEN
-        v_acao := 'CRIACAO';
-    ELSIF UPDATING THEN
-        v_acao := 'ALTERACAO';
-    ELSIF DELETING THEN
-        v_acao := 'EXCLUSAO';
-    END IF;
-
-    INSERT INTO IndicadoresTimeline (indicadorId, usuarioId, acao, descricao)
-    VALUES (
-        NVL(:NEW.indicadorId, :OLD.indicadorId),
-        NVL(:NEW.usuarioId, :OLD.usuarioId),
-        v_acao,
-        'Alteração automática registrada por trigger'
-    );
-END;
-/
-
 -- Eventos
 CREATE OR REPLACE TRIGGER trg_evento_log
 AFTER INSERT OR UPDATE OR DELETE ON Evento
