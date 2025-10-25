@@ -112,6 +112,7 @@ CREATE TABLE Indicador (
     descricao   VARCHAR2(255),
     usuarioId   NUMBER,
     deletado    CHAR(1) DEFAULT 'N' CHECK (deletado IN ('S','N')),
+    oculto      CHAR(1) DEFAULT 'N' CHECK (oculto IN ('S','N')),
     CONSTRAINT fk_indicador_usuario FOREIGN KEY (usuarioId)
         REFERENCES Usuario(usuarioId)
 );

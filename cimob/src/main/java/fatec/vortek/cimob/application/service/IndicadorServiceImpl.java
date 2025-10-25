@@ -13,6 +13,7 @@ import fatec.vortek.cimob.infrastructure.repository.EventoRepository;
 import fatec.vortek.cimob.infrastructure.repository.RegistroVelocidadeRepository;
 import fatec.vortek.cimob.infrastructure.config.AppConfig;
 import fatec.vortek.cimob.presentation.dto.response.IndiceCriticoResponseDTO;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -65,11 +66,21 @@ public class IndicadorServiceImpl implements IndicadorService {
                 .filter(ind -> !"S".equals(ind.getDeletado()))
                 .collect(Collectors.toList());
     }
+
+    @Override
+    @Transactional
+    public void atualizaSelecionados(List<Long> indicadoresId) {
+        repository.updateAllOculto("S");
+
+        if (!indicadoresId.isEmpty())
+            repository.updateOcultoByIds("N", indicadoresId);
+}
     
     @Override
     public List<Indicador> listarTodos(String timestamp) {
         List<Indicador> indicadores = repository.findAll().stream()
                 .filter(ind -> !"S".equals(ind.getDeletado()))
+                .filter (ind -> !"S".equals(ind.getOculto()))
                 .collect(Collectors.toList());
 
         List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(null, timestamp);

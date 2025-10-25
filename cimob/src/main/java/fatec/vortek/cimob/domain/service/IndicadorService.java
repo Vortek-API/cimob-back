@@ -24,4 +24,5 @@ public interface IndicadorService {
     Indicador obterPorMnemonicoRegiao(IndicadorMnemonico mnemonico, Long regiaoId, String timestamp);
     Indicador obterPorMnemonico(IndicadorMnemonico mnemonico, String timestamp);
     List<Indicador> listarIndicadoresSemCalculo();
+    void atualizaSelecionados(List<Long> indicadoresId);
 }

@@ -47,6 +47,10 @@ public class Indicador {
     @Column(length = 1, nullable = false)
     private String deletado = "N";
 
+    @Builder.Default
+    @Column(length = 1, nullable = false)
+    private String oculto = "N";
+
     @ManyToMany(mappedBy = "indicadores")
     private List<Evento> eventos;
 }

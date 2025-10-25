@@ -37,7 +37,7 @@ public class IndicadorController {
                 .build();
         i = service.criar(i);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new IndicadorResponseDTO(i.getIndicadorId(), i.getNome(), i.getValor(), i.getMnemonico(), i.getDescricao(), null));
+                .body(IndicadorResponseDTO.IndicadorModel2ResponseDTO(i));
     }
 
     @GetMapping
@@ -55,9 +55,15 @@ public class IndicadorController {
         }
         
         List<IndicadorResponseDTO> list = indicadores.stream()
-                .map(i -> new IndicadorResponseDTO(i.getIndicadorId(), i.getNome(), i.getValor(), i.getMnemonico(), i.getDescricao(), null))
+                .map(i -> IndicadorResponseDTO.IndicadorModel2ResponseDTO(i))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(list);
+    }
+
+    @PatchMapping("/atualiza-selecionados")
+    public ResponseEntity<Void> fetchAtualizaSelecionados(@RequestBody List<Long> indicadoresId) {
+        service.atualizaSelecionados(indicadoresId);
+        return ResponseEntity.noContent().build();
     }
     
     @GetMapping("/sem-calculo")
@@ -65,7 +71,7 @@ public class IndicadorController {
         List<Indicador> indicadores = service.listarIndicadoresSemCalculo();
         
         List<IndicadorResponseDTO> list = indicadores.stream()
-                .map(i -> new IndicadorResponseDTO(i.getIndicadorId(), i.getNome(), i.getValor(), i.getMnemonico(), i.getDescricao(), null))
+                .map(i -> IndicadorResponseDTO.IndicadorModel2ResponseDTO(i))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(list);
     }
@@ -82,8 +88,8 @@ public class IndicadorController {
         } else {
             indicador = service.obterPorMnemonico(mnemonico, timestamp);
         }
-        
-        return ResponseEntity.ok(new IndicadorResponseDTO(indicador.getIndicadorId(), indicador.getNome(), indicador.getValor(), indicador.getMnemonico(), indicador.getDescricao(), null));
+
+        return ResponseEntity.ok(IndicadorResponseDTO.IndicadorModel2ResponseDTO(indicador));
     }
 
     @GetMapping("/indices-criticos")
