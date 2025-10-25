@@ -9,6 +9,7 @@ import fatec.vortek.cimob.domain.model.RegistroVelocidade;
 import fatec.vortek.cimob.domain.service.IndicadorService;
 import fatec.vortek.cimob.domain.service.RegiaoService;
 import fatec.vortek.cimob.infrastructure.repository.IndicadorRepository;
+import fatec.vortek.cimob.infrastructure.repository.RadarRepository;
 import fatec.vortek.cimob.infrastructure.repository.EventoRepository;
 import fatec.vortek.cimob.infrastructure.repository.RegistroVelocidadeRepository;
 import fatec.vortek.cimob.infrastructure.config.AppConfig;
@@ -18,8 +19,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -30,9 +33,10 @@ public class IndicadorServiceImpl implements IndicadorService {
 
     private final IndicadorRepository repository;
     private final EventoRepository eventoRepository;
+    private final RadarRepository radarRepository;
     private final RegiaoService regiaoService;
     private final RegistroVelocidadeRepository registroVelocidadeRepository;
-
+    
     @Override
     public Indicador criar(Indicador indicador) {
         return repository.save(indicador);
@@ -369,5 +373,22 @@ public class IndicadorServiceImpl implements IndicadorService {
         } else {
             return registroVelocidadeRepository.findByDataBetweenAndRegiaoAndDeletado(inicioPeriodo, fimPeriodo, regiaoId);
         }
+    }
+
+     private Map<String, Long> calcularFluxoVeiculosUltimos5Minutos() {
+        LocalDateTime agora = LocalDateTime.now();
+        LocalDateTime cincoMinAtras = agora.minusMinutes(5);
+
+        List<Radar> radares = radarRepository.findAll();
+        Map<String, Long> fluxoPorRadar = new HashMap<>();
+
+        for (Radar radar : radares) {
+            Long qtdVeiculos = registroVelocidadeRepository.countByRadarIdAndDataRegistroBetween(
+                    radar.getRadarId(), cincoMinAtras, agora
+            );
+            fluxoPorRadar.put(radar.getRadarId(), qtdVeiculos);
+        }
+
+        return fluxoPorRadar;
     }
 }
