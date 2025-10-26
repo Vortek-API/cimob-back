@@ -30,6 +30,14 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
+import fatec.vortek.cimob.domain.model.RegistroVelocidade;
+import fatec.vortek.cimob.domain.enums.TipoVeiculo;
+import java.util.List;
+import java.util.Map;
+import java.util.EnumMap;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class IndicadorServiceImpl implements IndicadorService {
@@ -287,7 +295,7 @@ public class IndicadorServiceImpl implements IndicadorService {
                 .filter(v -> v != null)
                 .collect(Collectors.toList());
 
-        if (velocidades.size() < 2) {
+            if (velocidades.size() < 2) {
             return 1.0;
         }
 
@@ -461,6 +469,29 @@ public class IndicadorServiceImpl implements IndicadorService {
         return fluxoPorLocalizacao;
     }
 
+    private Map<TipoVeiculo, Double> calcularDistribuicaoPorTipo(List<RegistroVelocidade> registros) {
+        Map<TipoVeiculo, Double> distribuicao = new EnumMap<>(TipoVeiculo.class);
+        long totalVeiculos = registros.size();
+
+        if (totalVeiculos == 0) {
+            for (TipoVeiculo tipo : TipoVeiculo.values()) {
+                distribuicao.put(tipo, 0.0);
+            }
+            return distribuicao;
+        }
+
+        Map<TipoVeiculo, Long> contagemPorTipo = registros.stream()
+                .filter(r -> r.getTipoVeiculo() != null)
+                .collect(Collectors.groupingBy(RegistroVelocidade::getTipoVeiculo, Collectors.counting()));
+
+        for (TipoVeiculo tipo : TipoVeiculo.values()) {
+            long contagemDoTipo = contagemPorTipo.getOrDefault(tipo, 0L);
+            double percentual = (double) contagemDoTipo / totalVeiculos * 100.0;
+            distribuicao.put(tipo, percentual);
+        }
+
+        return distribuicao;
+    }
 
 
 }
