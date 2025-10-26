@@ -47,6 +47,7 @@ public class IndicadorServiceImpl implements IndicadorService {
     private final RadarRepository radarRepository;
     private final RegiaoService regiaoService;
     private final RegistroVelocidadeRepository registroVelocidadeRepository;
+    private record PontoHoraKey(String radarId, int hora) {}
     
     @Override
     public Indicador criar(Indicador indicador) {
@@ -492,6 +493,22 @@ public class IndicadorServiceImpl implements IndicadorService {
 
         return distribuicao;
     }
+    private Map<PontoHoraKey, Double> calcularVelocidadeMediaPorPontoEHora(List<RegistroVelocidade> registros) {
+        return registros.stream()
+                .filter(r -> r.getRadar() != null &&
+                            r.getRadar().getRadarId() != null &&
+                            r.getVelocidadeRegistrada() != null &&
+                            r.getData() != null)
+                
+                .collect(Collectors.groupingBy(
+                        r -> new PontoHoraKey(
+                                r.getRadar().getRadarId(),
+                                r.getData().getHour()
+                        ),
+                        
+                        Collectors.averagingInt(RegistroVelocidade::getVelocidadeRegistrada)
+                ));
+        }
 
 
 }
