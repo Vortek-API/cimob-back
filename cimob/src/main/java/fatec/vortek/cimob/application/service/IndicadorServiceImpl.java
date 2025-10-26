@@ -510,5 +510,15 @@ public class IndicadorServiceImpl implements IndicadorService {
                 ));
         }
 
+         private Double calcularDiferencaMediaVelocidade(List<RegistroVelocidade> registros) {
+        return registros.stream()
+                .filter(r -> r.getVelocidadeRegistrada() != null &&
+                              r.getRadar() != null &&
+                              r.getRadar().getVelocidadePermitida() != null)
+                .mapToDouble(r -> r.getVelocidadeRegistrada() - r.getRadar().getVelocidadePermitida())
+                .average()
+                .orElse(0.0); 
+    }
+
 
 }
