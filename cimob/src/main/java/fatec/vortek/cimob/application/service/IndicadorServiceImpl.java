@@ -519,6 +519,20 @@ public class IndicadorServiceImpl implements IndicadorService {
                 .average()
                 .orElse(0.0); 
     }
+   private Double calcularTaxaDeInfracoes(List<RegistroVelocidade> registros) {
+        long totalVeiculos = registros.size();
+        if (totalVeiculos == 0) {
+            return 0.0;
+        }
 
+        long numeroDeInfracoes = registros.stream()
+                .filter(r -> r.getVelocidadeRegistrada() != null &&
+                              r.getRadar() != null &&
+                              r.getRadar().getVelocidadePermitida() != null)
+                .filter(r -> r.getVelocidadeRegistrada() > r.getRadar().getVelocidadePermitida())
+                .count();
+
+        return (double) numeroDeInfracoes / totalVeiculos * 100.0;
+    }
 
 }
