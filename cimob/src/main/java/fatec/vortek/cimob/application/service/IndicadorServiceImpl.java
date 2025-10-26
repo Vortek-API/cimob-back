@@ -386,7 +386,7 @@ public class IndicadorServiceImpl implements IndicadorService {
         Map<String, Long> fluxoPorRadar = new HashMap<>();
 
         for (Radar radar : radares) {
-            Long qtdVeiculos = registroVelocidadeRepository.countByRadarIdAndDataRegistroBetween(
+            Long qtdVeiculos = registroVelocidadeRepository.countByRadar_RadarIdAndDataBetween(
                     radar.getRadarId(), cincoMinAtras, agora
             );
             fluxoPorRadar.put(radar.getRadarId(), qtdVeiculos);
@@ -401,7 +401,7 @@ public class IndicadorServiceImpl implements IndicadorService {
 
         for (Radar radar : radares) {
             // Agrupa os registros por hora e conta quantos veículos passaram
-            List<RegistroVelocidade> registros = registroVelocidadeRepository.findByRadarId(radar.getRadarId());
+            List<RegistroVelocidade> registros = registroVelocidadeRepository.findByRadar_RadarId(radar.getRadarId());
             Map<Integer, Long> contagemPorHora = registros.stream()
                 .filter(r -> r.getData() != null)
                 .collect(Collectors.groupingBy(
@@ -425,7 +425,7 @@ public class IndicadorServiceImpl implements IndicadorService {
         Map<String, Double> variacaoPorRadar = new HashMap<>();
 
         for (Radar radar : radares) {
-            List<Integer> velocidades = registroVelocidadeRepository.findByRadarId(radar.getRadarId()).stream()
+            List<Integer> velocidades = registroVelocidadeRepository.findByRadar_RadarId(radar.getRadarId()).stream()
                     .map(RegistroVelocidade::getVelocidadeRegistrada)
                     .filter(Objects::nonNull)
                     .collect(Collectors.toList());
@@ -453,7 +453,7 @@ public class IndicadorServiceImpl implements IndicadorService {
         Map<String, Long> fluxoPorLocalizacao = new HashMap<>();
 
         for (Radar radar : radares) {
-            Long total = registroVelocidadeRepository.countByRadarId(radar.getRadarId());
+            Long total = registroVelocidadeRepository.countByRadar_RadarId(radar.getRadarId());
             String coordenadas = String.format("(%s, %s)", radar.getLatitude(), radar.getLongitude());
             fluxoPorLocalizacao.put(coordenadas, total);
         }
