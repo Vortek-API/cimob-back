@@ -16,6 +16,8 @@ public class AutenticacaoServiceImpl {
     private final UsuarioRepository usuarioRepository;
     private final JwtUtilConfig jwtUtil;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final UsuarioServiceImpl usuarioService;
+    private final TimelineServiceImpl timelineService;
 
     public record AuthResponse(String accessToken) {}
 
@@ -41,6 +43,7 @@ public class AutenticacaoServiceImpl {
         usuarioRepository.save(usuario);
 
         System.out.println("[LOGIN] Login bem-sucedido para: " + email);
+        timelineService.criarTimelineLogin(usuario);
         return new AuthResponse(accessToken);
     }
 
@@ -76,6 +79,7 @@ public class AutenticacaoServiceImpl {
         usuario.setAccessToken(null);
         usuarioRepository.save(usuario);
 
+        timelineService.criarTimelineLogout(usuarioService.getUsuarioLogado());
         System.out.println("[LOGOUT] Logout realizado: " + email);
     }
 }

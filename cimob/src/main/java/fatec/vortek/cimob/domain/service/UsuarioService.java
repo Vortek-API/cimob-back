@@ -13,5 +13,6 @@ public interface UsuarioService {
     void deletar(Long id);
     UsuarioResponseDTO buscarPorEmail(String email);
     UsuarioResponseDTO atualizar(Long id, UsuarioRequestDTO dto);
+    Usuario getUsuarioLogado();
 
 }
