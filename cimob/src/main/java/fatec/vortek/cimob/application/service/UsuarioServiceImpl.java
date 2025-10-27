@@ -8,7 +8,8 @@ import fatec.vortek.cimob.presentation.dto.response.UsuarioResponseDTO;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
-import org.apache.catalina.mapper.Mapper;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -103,15 +104,24 @@ public class UsuarioServiceImpl implements UsuarioService {
                 usuario.getDeletado().equals("S")
         );
     }
-@Override
-public UsuarioResponseDTO buscarPorEmail(String email) {
-    Usuario usuario = repository.findByEmail(email)
-            .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
+    @Override
+    public UsuarioResponseDTO buscarPorEmail(String email) {
+        Usuario usuario = repository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("Usuário não encontrado"));
 
-    UsuarioResponseDTO dto = new UsuarioResponseDTO();
-    dto.setNome(usuario.getNome());
-    dto.setEmail(usuario.getEmail());
-    dto.setCargo(usuario.getCargo());
-    return dto;
-}
+        UsuarioResponseDTO dto = new UsuarioResponseDTO();
+        dto.setNome(usuario.getNome());
+        dto.setEmail(usuario.getEmail());
+        dto.setCargo(usuario.getCargo());
+        return dto;
+    }
+
+    @Override
+    public Usuario getUsuarioLogado() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof String email) {
+            return repository.findByEmail(email).orElse(null);
+        }
+        return null;
+    }
 }

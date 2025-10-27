@@ -48,6 +48,7 @@ public class IndicadorServiceImpl implements IndicadorService {
     private final RadarRepository radarRepository;
     private final RegiaoService regiaoService;
     private final RegistroVelocidadeRepository registroVelocidadeRepository;
+    private final TimelineServiceImpl timelineService;
     
     // private record PontoHoraKey(String radarId, int hora) {
     // }
@@ -89,7 +90,18 @@ public class IndicadorServiceImpl implements IndicadorService {
     @Override
     @Transactional
     public void atualizaSelecionados(List<Long> indicadoresId) {
+        List<Indicador> todosIndicadores = repository.findAll();
+
         repository.updateOcultoByIdsCase(indicadoresId);
+
+        for (Indicador indicador : todosIndicadores) {
+            boolean estaSelecionado = indicadoresId.contains(indicador.getIndicadorId());
+            if (estaSelecionado && "S".equals(indicador.getOculto())) {
+                timelineService.criarTimelineIndicadorDesoculto(indicador);
+            } else if (!estaSelecionado && "N".equals(indicador.getOculto())) {
+                timelineService.criarTimelineIndicadorOculto(indicador);
+            }
+        }
     }
 
     @Override

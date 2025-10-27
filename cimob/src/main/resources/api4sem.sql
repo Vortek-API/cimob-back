@@ -147,9 +147,9 @@ CREATE TABLE EventoIndicador (
 -- TIMELINES (LOGS)
 -- ==========================
 
-CREATE TABLE IndicadoresTimeline (
+CREATE TABLE Timeline (
     timelineId   NUMBER PRIMARY KEY,
-    indicadorId  NUMBER NOT NULL,
+    tipo         VARCHAR2(100) NOT NULL,
     usuarioId    NUMBER,
     acao         VARCHAR2(20) NOT NULL, -- CRIACAO, ALTERACAO, EXCLUSAO
     descricao    VARCHAR2(500),
@@ -157,19 +157,6 @@ CREATE TABLE IndicadoresTimeline (
     CONSTRAINT fk_timeline_indicador FOREIGN KEY (indicadorId)
         REFERENCES Indicador(indicadorId),
     CONSTRAINT fk_timeline_usuario FOREIGN KEY (usuarioId)
-        REFERENCES Usuario(usuarioId)
-);
-
-CREATE TABLE EventosTimeline (
-    timelineId   NUMBER PRIMARY KEY,
-    eventoId     NUMBER NOT NULL,
-    usuarioId    NUMBER,
-    acao         VARCHAR2(20) NOT NULL,
-    descricao    VARCHAR2(500),
-    data         DATE DEFAULT SYSDATE NOT NULL,
-    CONSTRAINT fk_timeline_evento FOREIGN KEY (eventoId)
-        REFERENCES Evento(eventoId),
-    CONSTRAINT fk_timeline_usuario_evento FOREIGN KEY (usuarioId)
         REFERENCES Usuario(usuarioId)
 );
 
