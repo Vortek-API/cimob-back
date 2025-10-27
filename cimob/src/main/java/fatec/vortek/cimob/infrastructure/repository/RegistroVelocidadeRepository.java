@@ -36,12 +36,18 @@ public interface RegistroVelocidadeRepository extends JpaRepository<RegistroVelo
 
        @Query("SELECT r FROM RegistroVelocidade r WHERE r.deletado = 'N' AND r.data >= :inicioDia AND r.data <= :fimDia AND r.tipoVeiculo = :tipoVeiculo")
        List<RegistroVelocidade> findByDataBetweenAndTipoVeiculo(@Param("inicioDia") LocalDateTime inicioDia,
-                                                                                                          @Param("fimDia") LocalDateTime fimDia,
-                                                                                                          @Param("tipoVeiculo") TipoVeiculo tipoVeiculo);
+                                                                                                                @Param("fimDia") LocalDateTime fimDia,
+                                                                                                                @Param("tipoVeiculo") TipoVeiculo tipoVeiculo);
 
        @Query("SELECT r FROM RegistroVelocidade r JOIN r.radar rad WHERE r.deletado = 'N' AND r.data >= :inicioDia AND r.data <= :fimDia AND rad.regiao.regiaoId = :regiaoId AND rad.deletado = 'N' AND r.tipoVeiculo = :tipoVeiculo")
        List<RegistroVelocidade> findByDataBetweenAndRegiaoAndTipoVeiculo(@Param("inicioDia") LocalDateTime inicioDia,
                                                                                                                          @Param("fimDia") LocalDateTime fimDia,
                                                                                                                          @Param("regiaoId") Long regiaoId,
                                                                                                                          @Param("tipoVeiculo") TipoVeiculo tipoVeiculo);
+
+       Long countByRadar_RadarIdAndDataBetween(String radarId, LocalDateTime cincoMinAtras, LocalDateTime agora);
+
+       List<RegistroVelocidade> findByRadar_RadarId(String radarId);
+
+       Long countByRadar_RadarId(String radarId);
 }
