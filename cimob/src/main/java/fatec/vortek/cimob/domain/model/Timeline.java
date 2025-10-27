@@ -11,7 +11,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "Ponto")
+@Table(name = "Timeline")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -19,7 +19,8 @@ import lombok.*;
 public class Timeline {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "timeline_seq")
+    @SequenceGenerator(name = "timeline_seq", sequenceName = "seq_timeline", allocationSize = 1)
     @Column(name = "timelineId")
     private Long timelineId;
 

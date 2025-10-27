@@ -43,7 +43,7 @@ public class AutenticacaoServiceImpl {
         usuarioRepository.save(usuario);
 
         System.out.println("[LOGIN] Login bem-sucedido para: " + email);
-        timelineService.criarTimelineLogin(usuarioService.getUsuarioLogado());
+        timelineService.criarTimelineLogin(usuario);
         return new AuthResponse(accessToken);
     }
 
