@@ -53,6 +53,8 @@ Thumbs.db
 
 ### Secrets ###
 /cimob/src/main/resources/application.properties
+/cimob/src/main/resources/wallet/
+/cimob/.env
 application.yml
 application-*.properties
 application-*.yml

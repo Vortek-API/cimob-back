@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/registros-velocidade")
 @Tag(name = "Registros de velocidade")

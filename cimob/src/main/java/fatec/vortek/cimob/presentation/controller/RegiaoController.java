@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
 
+@CrossOrigin
 @RestController
 @RequestMapping("/api/regioes")
 @RequiredArgsConstructor

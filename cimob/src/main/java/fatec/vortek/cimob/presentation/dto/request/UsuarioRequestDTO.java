@@ -1,5 +1,6 @@
 package fatec.vortek.cimob.presentation.dto.request;
 
+import fatec.vortek.cimob.domain.enums.CargoUsuario;
 import lombok.*;
 
 @Data
@@ -9,9 +10,10 @@ import lombok.*;
 public class UsuarioRequestDTO {
     private String cpf;
     private String nome;
-    private String sobreNome;
-    private String userName;
     private String email;
-    private String cargo;
-    private String deletado;
+    private CargoUsuario cargo;
+    private String senha; 
+
+    @Builder.Default
+    private String deletado = "N";
 }
