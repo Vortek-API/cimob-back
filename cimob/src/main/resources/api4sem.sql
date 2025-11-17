@@ -7,11 +7,12 @@ CREATE TABLE Usuario (
     usuarioId   NUMBER PRIMARY KEY,
     cpf         CHAR(11) UNIQUE NOT NULL,
     nome        VARCHAR2(100) NOT NULL,
-    sobrenome   VARCHAR2(100),
-    username    VARCHAR2(50) UNIQUE NOT NULL,
     email       VARCHAR2(150) UNIQUE NOT NULL,
     cargo       VARCHAR2(100),
-    deletado    CHAR(1) DEFAULT 'N' CHECK (deletado IN ('S','N'))
+    deletado    CHAR(1) DEFAULT 'N' CHECK (deletado IN ('S','N')),
+    senha       VARCHAR2(100) NOT NULL,
+    refreshToken VARCHAR2(2000),
+    accessToken VARCHAR2(2000)
 );
 
 -- Região
