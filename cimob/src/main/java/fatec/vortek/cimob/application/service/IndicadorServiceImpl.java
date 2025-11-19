@@ -106,14 +106,30 @@ public class IndicadorServiceImpl implements IndicadorService {
 
     @Override
     public List<Indicador> listarTodos(String timestamp) {
+        return listarTodos(timestamp, null);
+    }
+
+    @Override
+    public List<Indicador> listarTodos(String timestamp, String radarId) {
+
         List<Indicador> indicadores = repository.findAll().stream()
                 .filter(ind -> !"S".equals(ind.getDeletado()))
                 .filter(ind -> !"S".equals(ind.getOculto()))
-                .collect(Collectors.toList());
+                .toList();
 
         List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(null, timestamp);
 
-        indicadores.forEach(indicador -> calcularValorIndicadoresComRegistros(indicador, registros));
+        List<RegistroVelocidade> registrosFiltrados =
+                (radarId != null && !radarId.isBlank())
+                ? registros.stream()
+                    .filter(r -> r.getRadar() != null &&
+                                radarId.equals(r.getRadar().getRadarId()))
+                    .toList()
+                : registros;
+
+        for (Indicador indicador : indicadores) {
+            calcularValorIndicadoresComRegistros(indicador, registrosFiltrados);
+        }
 
         return indicadores;
     }
@@ -123,23 +139,38 @@ public class IndicadorServiceImpl implements IndicadorService {
         return listarPorRegiao(regiaoId, null);
     }
 
-    @Override
     public List<Indicador> listarPorRegiao(Long regiaoId, String timestamp) {
+        return listarPorRegiao(regiaoId, timestamp, null);
+    }
+
+    @Override
+    public List<Indicador> listarPorRegiao(Long regiaoId, String timestamp, String radarId) {
+
         Regiao regiao = regiaoService.buscarPorId(regiaoId);
         if (regiao == null) {
             throw new RuntimeException("Região não encontrada com ID: " + regiaoId);
         }
 
-        List<Indicador> todosIndicadores = repository.findAll().stream()
-                .filter(indicador -> !"S".equals(indicador.getDeletado()))
-                .filter(indicador -> !"S".equals(indicador.getOculto()))
-                .collect(Collectors.toList());
+        List<Indicador> indicadores = repository.findAll().stream()
+                .filter(ind -> !"S".equals(ind.getDeletado()))
+                .filter(ind -> !"S".equals(ind.getOculto()))
+                .toList();
 
         List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
 
-        todosIndicadores.forEach(indicador -> calcularValorIndicadoresComRegistros(indicador, registros));
+        List<RegistroVelocidade> registrosFiltrados =
+                (radarId != null && !radarId.isBlank())
+                        ? registros.stream()
+                            .filter(r -> r.getRadar() != null &&
+                                        radarId.equals(r.getRadar().getRadarId()))
+                            .toList()
+                        : registros;
 
-        return todosIndicadores;
+        for (Indicador indicador : indicadores) {
+            calcularValorIndicadoresComRegistros(indicador, registrosFiltrados);
+        }
+
+        return indicadores;
     }
 
     @Override
