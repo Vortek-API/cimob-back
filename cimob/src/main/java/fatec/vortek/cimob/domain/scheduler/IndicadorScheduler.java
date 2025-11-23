@@ -25,10 +25,10 @@ public class IndicadorScheduler {
     private final RegiaoRepository regiaoRepository;
 
     /**
-     * Executa a cada 60 segundos.
+     * Executa a cada 5 minutos.
      */
     @Transactional
-    @Scheduled(fixedRate = 60_000)
+    @Scheduled(fixedRate = 300_000)
     public void verificarIndicadoresPeriodicamente() {
 
         System.out.println("[Scheduler] Verificando indicadores...");
