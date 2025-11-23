@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -39,6 +40,7 @@ public class IndicadorServiceImpl implements IndicadorService {
 
     private final IndicadorRepository repository;
     private final EventoRepository eventoRepository;
+    private final RadarRepository radarRepository;
     private final RegiaoService regiaoService;
     private final RegiaoRepository regiaoRepository;
     private final RegistroVelocidadeRepository registroVelocidadeRepository;
