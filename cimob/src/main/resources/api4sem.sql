@@ -121,14 +121,11 @@ CREATE TABLE Indicador (
 -- Evento
 CREATE TABLE Evento (
     eventoId     NUMBER PRIMARY KEY,
-    indicadorId  NUMBER NOT NULL,
     nome         VARCHAR2(100) NOT NULL,
     data         DATE DEFAULT SYSDATE NOT NULL,
     descricao    VARCHAR2(255),
     usuarioId    NUMBER,
     deletado     CHAR(1) DEFAULT 'N' CHECK (deletado IN ('S','N')),
-    CONSTRAINT fk_evento_indicador FOREIGN KEY (indicadorId)
-        REFERENCES Indicador(indicadorId),
     CONSTRAINT fk_evento_usuario FOREIGN KEY (usuarioId)
         REFERENCES Usuario(usuarioId)
 );

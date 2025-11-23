@@ -29,9 +29,15 @@ public class RegistroVelocidade {
     @JoinColumn(name = "radarId", nullable = false)
     private Radar radar;
 
+    @Transient
+    private String radarId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name =  "regiaoId")
     private Regiao regiao;
+
+    @Transient
+    private Long regiaoId;
 
     @Column(name = "tipoVeiculo")
     @Convert(converter = TipoVeiculoConverter.class)
