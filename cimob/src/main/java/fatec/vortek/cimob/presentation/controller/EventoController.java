@@ -52,10 +52,9 @@ public class EventoController {
                 e.getEventoId(),
                 e.getNome(),
                 e.getDescricao(),
-                e.getData(),
+                e.getDataInicio(),
+                e.getDataFim(),
                 e.getUsuario() != null ? e.getUsuario().getUsuarioId() : null,
-                null,
-                e.getIndicadores() != null ? e.getIndicadores().stream().map(ind -> ind.getIndicadorId()).collect(Collectors.toList()) : null,
                 e.getRegioes() != null ? e.getRegioes().stream().map(r -> r.getRegiaoId()).collect(Collectors.toList()) : null
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
@@ -80,10 +79,9 @@ public class EventoController {
                 atualizado.getEventoId(),
                 atualizado.getNome(),
                 atualizado.getDescricao(),
-                atualizado.getData(),
+                atualizado.getDataInicio(),
+                atualizado.getDataFim(),
                 atualizado.getUsuario() != null ? atualizado.getUsuario().getUsuarioId() : null,
-                null,
-                atualizado.getIndicadores() != null ? atualizado.getIndicadores().stream().map(ind -> ind.getIndicadorId()).collect(Collectors.toList()) : null,
                 atualizado.getRegioes() != null ? atualizado.getRegioes().stream().map(r -> r.getRegiaoId()).collect(Collectors.toList()) : null
         );
 
@@ -94,16 +92,7 @@ public class EventoController {
     public ResponseEntity<List<EventoResponseDTO>> listar() {
         List<EventoResponseDTO> list = service.listarTodos().stream()
                 .filter(e -> !"S".equals(e.getDeletado()))
-                .map(e -> new EventoResponseDTO(
-                        e.getEventoId(),
-                        e.getNome(),
-                        e.getDescricao(),
-                        e.getData(),
-                        e.getUsuario() != null ? e.getUsuario().getUsuarioId() : null,
-                        null,
-                        e.getIndicadores() != null ? e.getIndicadores().stream().map(ind -> ind.getIndicadorId()).collect(Collectors.toList()) : null,
-                        e.getRegioes() != null ? e.getRegioes().stream().map(r -> r.getRegiaoId()).collect(Collectors.toList()) : null
-                ))
+                .map(e -> EventoResponseDTO.Model2ResponseDTO(e))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(list);
     }
@@ -115,24 +104,11 @@ public class EventoController {
                 e.getEventoId(),
                 e.getNome(),
                 e.getDescricao(),
-                e.getData(),
+                e.getDataInicio(),
+                e.getDataFim(),
                 e.getUsuario() != null ? e.getUsuario().getUsuarioId() : null,
-                null,
-                e.getIndicadores() != null ? e.getIndicadores().stream().map(ind -> ind.getIndicadorId()).collect(Collectors.toList()) : null,
                 e.getRegioes() != null ? e.getRegioes().stream().map(r -> r.getRegiaoId()).collect(Collectors.toList()) : null
         );
         return ResponseEntity.ok(resp);
-    }
-
-    @PostMapping("/{eventoId}/associarIndicador/{indicadorId}")
-    public ResponseEntity<Void> associarIndicador(@PathVariable Long eventoId, @PathVariable Long indicadorId) {
-        service.associarIndicador(eventoId, indicadorId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
-    @DeleteMapping("/{eventoId}/desassociarIndicador/{indicadorId}")
-    public ResponseEntity<Void> desassociarIndicador(@PathVariable Long eventoId, @PathVariable Long indicadorId) {
-        service.desassociarIndicador(eventoId, indicadorId);
-        return ResponseEntity.noContent().build();
     }
 }

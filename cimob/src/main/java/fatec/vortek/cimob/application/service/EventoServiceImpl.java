@@ -39,18 +39,14 @@ public class EventoServiceImpl implements EventoService {
         // Atualiza campos básicos
         existente.setNome(evento.getNome());
         existente.setDescricao(evento.getDescricao());
-        existente.setData(evento.getData());
+        existente.setDataInicio(evento.getDataInicio());
+        existente.setDataFim(evento.getDataFim());
         existente.setUsuario(evento.getUsuario());
         existente.setDeletado(evento.getDeletado());
 
         // Se regioes vierem preenchidas no 'evento', substitui a lista
         if (evento.getRegioes() != null) {
             existente.setRegioes(evento.getRegioes());
-        }
-
-        // Se indicadores vierem, atualiza também (mantendo compatibilidade)
-        if (evento.getIndicadores() != null) {
-            existente.setIndicadores(evento.getIndicadores());
         }
 
         return eventoRepository.save(existente);
@@ -78,42 +74,5 @@ public class EventoServiceImpl implements EventoService {
     @Override
     public List<Evento> listarTodos() {
         return eventoRepository.findAll();
-    }
-
-    @Override
-    public void associarIndicador(Long eventoId, Long indicadorId) {
-        Evento e = eventoRepository.findById(eventoId)
-                .orElseThrow(() -> new RuntimeException("Evento não encontrado: " + eventoId));
-        Indicador i = indicadorRepository.findById(indicadorId)
-                .orElseThrow(() -> new RuntimeException("Indicador não encontrado: " + indicadorId));
-        List<Indicador> lista = e.getIndicadores();
-        if (lista == null) {
-            lista = new java.util.ArrayList<>();
-        }
-        if (!lista.contains(i)) {
-            lista.add(i);
-            e.setIndicadores(lista);
-            eventoRepository.save(e);
-        }
-    }
-
-    @Override
-    public void desassociarIndicador(Long eventoId, Long indicadorId) {
-        Evento e = eventoRepository.findById(eventoId)
-                .orElseThrow(() -> new RuntimeException("Evento não encontrado: " + eventoId));
-        Indicador i = indicadorRepository.findById(indicadorId)
-                .orElseThrow(() -> new RuntimeException("Indicador não encontrado: " + indicadorId));
-        List<Indicador> lista = e.getIndicadores();
-        if (lista != null && lista.removeIf(ind -> ind.getIndicadorId().equals(indicadorId))) {
-            e.setIndicadores(lista);
-            eventoRepository.save(e);
-        }
-    }
-
-    @Override
-    public List<Indicador> listarIndicadores(Long eventoId) {
-        Evento e = eventoRepository.findById(eventoId)
-                .orElseThrow(() -> new RuntimeException("Evento não encontrado: " + eventoId));
-        return e.getIndicadores();
     }
 }

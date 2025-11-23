@@ -100,16 +100,4 @@ public class IndicadorController {
         List<IndiceCriticoResponseDTO> resp = service.listarTopExcessosVelocidade(regiaoId, timestamp);
         return ResponseEntity.ok(resp);
     }
-
-    @PostMapping("/{indicadorId}/associarEvento/{eventoId}")
-    public ResponseEntity<Void> associarAEvento(@PathVariable Long indicadorId, @PathVariable Long eventoId) {
-        service.associarAEvento(indicadorId, eventoId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
-    @DeleteMapping("/{indicadorId}/desassociarEvento/{eventoId}")
-    public ResponseEntity<Void> desassociarDeEvento(@PathVariable Long indicadorId, @PathVariable Long eventoId) {
-        service.desassociarDeEvento(indicadorId, eventoId);
-        return ResponseEntity.noContent().build();
-    }
 }
