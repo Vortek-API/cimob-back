@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import fatec.vortek.cimob.domain.model.Usuario;
+import fatec.vortek.cimob.domain.service.EmailService;
 import fatec.vortek.cimob.infrastructure.config.JwtUtilConfig;
 import fatec.vortek.cimob.infrastructure.repository.UsuarioRepository;
 
@@ -18,6 +19,7 @@ public class AutenticacaoServiceImpl {
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private final UsuarioServiceImpl usuarioService;
     private final TimelineServiceImpl timelineService;
+    private final EmailService emailService;
 
     public record AuthResponse(String accessToken) {}
 
@@ -81,5 +83,31 @@ public class AutenticacaoServiceImpl {
 
         timelineService.criarTimelineLogout(usuarioService.getUsuarioLogado());
         System.out.println("[LOGOUT] Logout realizado: " + email);
+    }
+
+    public void recuperarSenha(String email) {
+        Usuario usuario = usuarioRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+
+        String token = java.util.UUID.randomUUID().toString();
+        usuario.setResetToken(token);
+        usuario.setResetTokenExpiration(java.time.LocalDateTime.now().plusHours(1));
+        usuarioRepository.save(usuario);
+
+        emailService.sendPasswordResetEmail(usuario.getEmail(), token);
+    }
+
+    public void redefinirSenha(String token, String novaSenha) {
+        Usuario usuario = usuarioRepository.findByResetToken(token)
+                .orElseThrow(() -> new RuntimeException("Token inválido"));
+
+        if (usuario.getResetTokenExpiration().isBefore(java.time.LocalDateTime.now())) {
+            throw new RuntimeException("Token expirado");
+        }
+
+        usuario.setSenha(passwordEncoder.encode(novaSenha));
+        usuario.setResetToken(null);
+        usuario.setResetTokenExpiration(null);
+        usuarioRepository.save(usuario);
     }
 }

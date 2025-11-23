@@ -12,7 +12,9 @@ CREATE TABLE Usuario (
     deletado    CHAR(1) DEFAULT 'N' CHECK (deletado IN ('S','N')),
     senha       VARCHAR2(100) NOT NULL,
     refreshToken VARCHAR2(2000),
-    accessToken VARCHAR2(2000)
+    accessToken VARCHAR2(2000),
+    resetToken VARCHAR2(2000),
+    resetTokenExpiration TIMESTAMP
 );
 
 -- Região
