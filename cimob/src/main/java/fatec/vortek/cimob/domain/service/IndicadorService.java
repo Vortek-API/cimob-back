@@ -16,9 +16,6 @@ public interface IndicadorService {
     List<Indicador> listarTodos(String timestamp);
     List<Indicador> listarPorRegiao(Long regiaoId);
     List<Indicador> listarPorRegiao(Long regiaoId, String timestamp);
-    void associarAEvento(Long indicadorId, Long eventoId);
-    void desassociarDeEvento(Long indicadorId, Long eventoId);
-    List<Evento> listarEventos(Long indicadorId);
     java.util.List<IndiceCriticoResponseDTO> listarTopExcessosVelocidade(Long regiaoId);
     java.util.List<IndiceCriticoResponseDTO> listarTopExcessosVelocidade(Long regiaoId, String timestamp);
     Indicador obterPorMnemonicoRegiao(IndicadorMnemonico mnemonico, Long regiaoId, String timestamp);

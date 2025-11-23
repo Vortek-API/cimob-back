@@ -41,4 +41,10 @@ public class Usuario {
 
     @Column(name = "accessToken")
     private String accessToken;
+
+    @Column(name = "resetToken")
+    private String resetToken;
+
+    @Column(name = "resetTokenExpiration")
+    private java.time.LocalDateTime resetTokenExpiration;
 }

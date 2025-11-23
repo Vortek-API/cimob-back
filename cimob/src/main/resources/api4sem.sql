@@ -12,7 +12,9 @@ CREATE TABLE Usuario (
     deletado    CHAR(1) DEFAULT 'N' CHECK (deletado IN ('S','N')),
     senha       VARCHAR2(100) NOT NULL,
     refreshToken VARCHAR2(2000),
-    accessToken VARCHAR2(2000)
+    accessToken VARCHAR2(2000),
+    resetToken VARCHAR2(2000),
+    resetTokenExpiration TIMESTAMP
 );
 
 -- Região
@@ -122,7 +124,8 @@ CREATE TABLE Indicador (
 CREATE TABLE Evento (
     eventoId     NUMBER PRIMARY KEY,
     nome         VARCHAR2(100) NOT NULL,
-    data         DATE DEFAULT SYSDATE NOT NULL,
+    dataInicio         DATE DEFAULT SYSDATE NOT NULL,
+    dataFim         DATE DEFAULT SYSDATE NOT NULL,
     descricao    VARCHAR2(255),
     usuarioId    NUMBER,
     deletado     CHAR(1) DEFAULT 'N' CHECK (deletado IN ('S','N')),
@@ -130,16 +133,13 @@ CREATE TABLE Evento (
         REFERENCES Usuario(usuarioId)
 );
 
--- Relação N:N entre Evento e Indicador
-CREATE TABLE EventoIndicador (
-    eventoId     NUMBER NOT NULL,
-    indicadorId  NUMBER NOT NULL,
-    CONSTRAINT pk_evento_indicador PRIMARY KEY (eventoId, indicadorId),
-    CONSTRAINT fk_eventoindic_evento FOREIGN KEY (eventoId)
-        REFERENCES Evento(eventoId),
-    CONSTRAINT fk_eventoindic_indicador FOREIGN KEY (indicadorId)
-        REFERENCES Indicador(indicadorId)
-);
+CREATE TABLE EventoRegiao (
+    eventoId NUMBER NOT NULL,
+    regiaoId NUMBER NOT NULL,
+    PRIMARY KEY (eventoId, regiaoId),
+    FOREIGN KEY (eventoId) REFERENCES Evento(eventoId),
+    FOREIGN KEY (regiaoId) REFERENCES Regiao(regiaoId)
+)
 
 -- ==========================
 -- TIMELINES (LOGS)

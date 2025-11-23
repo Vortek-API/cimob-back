@@ -194,29 +194,6 @@ public class IndicadorServiceImpl implements IndicadorService {
 
         return indicador;
     }
-
-    @Override
-    public void associarAEvento(Long indicadorId, Long eventoId) {
-        Indicador i = repository.findById(indicadorId).orElseThrow();
-        Evento e = eventoRepository.findById(eventoId).orElseThrow();
-        i.getEventos().add(e);
-        repository.save(i);
-    }
-
-    @Override
-    public void desassociarDeEvento(Long indicadorId, Long eventoId) {
-        Indicador i = repository.findById(indicadorId).orElseThrow();
-        Evento e = eventoRepository.findById(eventoId).orElseThrow();
-        i.getEventos().remove(e);
-        repository.save(i);
-    }
-
-    @Override
-    public List<Evento> listarEventos(Long indicadorId) {
-        Indicador i = repository.findById(indicadorId).orElseThrow();
-        return i.getEventos();
-    }
-
     @Override
     public java.util.List<IndiceCriticoResponseDTO> listarTopExcessosVelocidade(Long regiaoId) {
         return listarTopExcessosVelocidade(regiaoId, null);
