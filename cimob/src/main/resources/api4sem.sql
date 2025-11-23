@@ -6,7 +6,7 @@
 CREATE TABLE Usuario (
     usuarioId   NUMBER PRIMARY KEY,
     cpf         CHAR(11) UNIQUE NOT NULL,
-    nome        VARCHAR2(100) NOT NULL,
+    nomeCompleto VARCHAR2(100) NOT NULL,
     email       VARCHAR2(150) UNIQUE NOT NULL,
     cargo       VARCHAR2(100),
     deletado    CHAR(1) DEFAULT 'N' CHECK (deletado IN ('S','N')),

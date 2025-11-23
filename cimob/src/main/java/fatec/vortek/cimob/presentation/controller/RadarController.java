@@ -2,9 +2,12 @@ package fatec.vortek.cimob.presentation.controller;
 
 import fatec.vortek.cimob.application.service.RadarServiceImpl;
 import fatec.vortek.cimob.application.service.RegiaoServiceImpl;
+import fatec.vortek.cimob.domain.model.Indicador;
 import fatec.vortek.cimob.domain.model.Radar;
 import fatec.vortek.cimob.domain.model.Regiao;
 import fatec.vortek.cimob.presentation.dto.request.RadarRequestDTO;
+import fatec.vortek.cimob.presentation.dto.response.IndicadorRadarResponseDTO;
+import fatec.vortek.cimob.presentation.dto.response.IndicadorResponseDTO;
 import fatec.vortek.cimob.presentation.dto.response.RadarResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -13,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @CrossOrigin
 @RestController
@@ -80,6 +84,21 @@ public class RadarController {
                 .velocidadePermitida(r.getVelocidadePermitida())
                 .build();
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{radarId}/indicadores")
+    public ResponseEntity<List<IndicadorRadarResponseDTO>> listarIndicadoresPorRadar(
+            @PathVariable String radarId,
+            @RequestParam(required = false) String timestamp) {
+
+        return ResponseEntity.ok(radarService.listarIndicadores(timestamp, radarId));
+    }
+
+     @GetMapping("/indicadores")
+    public ResponseEntity<List<IndicadorRadarResponseDTO>> listarIndicadores(
+            @RequestParam(required = false) String timestamp) {
+
+        return ResponseEntity.ok(radarService.listarIndicadores(timestamp));
     }
 
     @PutMapping("/{id}")
