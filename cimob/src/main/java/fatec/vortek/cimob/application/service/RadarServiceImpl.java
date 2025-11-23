@@ -7,6 +7,8 @@ import fatec.vortek.cimob.infrastructure.repository.RadarRepository;
 import fatec.vortek.cimob.presentation.dto.response.IndicadorRadarResponseDTO;
 import fatec.vortek.cimob.presentation.dto.response.IndicadorResponseDTO;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -39,6 +41,10 @@ public class RadarServiceImpl implements RadarService {
     }
 
     @Override
+    @Cacheable(
+    value = "listarIndicadores",
+    key = "{#timestamp}"
+    )
     public List<IndicadorRadarResponseDTO> listarIndicadores(String timestamp) {
         List<Radar> radares = repository.findAll();
 
@@ -52,6 +58,10 @@ public class RadarServiceImpl implements RadarService {
 
 
     @Override
+    @Cacheable(
+    value = "listarIndicadores",
+    key = "{#timestamp, #radarId}"
+    )
     public List<IndicadorRadarResponseDTO> listarIndicadores(String timestamp, String radarId)
     {
         List<Indicador> indicadores = indicadorService.listarTodos(timestamp, radarId).stream()
