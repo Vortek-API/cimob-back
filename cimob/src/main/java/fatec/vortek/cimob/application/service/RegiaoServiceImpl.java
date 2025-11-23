@@ -1,12 +1,9 @@
 package fatec.vortek.cimob.application.service;
 
-import fatec.vortek.cimob.domain.model.Radar;
 import fatec.vortek.cimob.domain.model.Regiao;
 import fatec.vortek.cimob.domain.service.RegiaoService;
 import fatec.vortek.cimob.infrastructure.repository.RegiaoRepository;
 import lombok.RequiredArgsConstructor;
-
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
