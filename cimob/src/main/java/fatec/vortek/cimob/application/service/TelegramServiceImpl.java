@@ -30,6 +30,7 @@ public class TelegramServiceImpl implements TelegramService {
         Map<String, String> body = new HashMap<>();
         body.put("chat_id", chatId);
         body.put("text", dto.message());
+        body.put("parse_mode", "Markdown"); // Habilita a formatação Markdown
 
         restTemplate.postForObject(url, body, String.class);
     }
