@@ -2,13 +2,11 @@ package fatec.vortek.cimob.presentation.controller;
 
 import fatec.vortek.cimob.application.service.IndicadorServiceImpl;
 import fatec.vortek.cimob.domain.enums.IndicadorMnemonico;
-import fatec.vortek.cimob.domain.model.Evento;
 import fatec.vortek.cimob.domain.model.Indicador;
 import fatec.vortek.cimob.presentation.dto.request.IndicadorRequestDTO;
 import fatec.vortek.cimob.presentation.dto.response.IndicadorResponseDTO;
 import lombok.RequiredArgsConstructor;
 
-import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -23,7 +23,7 @@ public class Evento {
     private String nome;
 
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(nullable = false)
+    @Column(name = "DATAINICIO", nullable = false)
     private Date data = new Date();
 
     @Column(length = 255)

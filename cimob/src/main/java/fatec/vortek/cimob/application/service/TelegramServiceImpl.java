@@ -3,13 +3,10 @@ package fatec.vortek.cimob.application.service;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import fatec.vortek.cimob.domain.service.IndicadorService;
 import fatec.vortek.cimob.domain.service.TelegramService;
 import fatec.vortek.cimob.presentation.dto.request.TelegramMessageDTO;
 

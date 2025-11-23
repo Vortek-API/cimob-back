@@ -9,7 +9,6 @@ import fatec.vortek.cimob.domain.model.RegistroVelocidade;
 import fatec.vortek.cimob.domain.service.IndicadorService;
 import fatec.vortek.cimob.domain.service.RegiaoService;
 import fatec.vortek.cimob.infrastructure.repository.IndicadorRepository;
-import fatec.vortek.cimob.infrastructure.repository.RadarRepository;
 import fatec.vortek.cimob.infrastructure.repository.EventoRepository;
 import fatec.vortek.cimob.infrastructure.repository.RegistroVelocidadeRepository;
 import fatec.vortek.cimob.infrastructure.config.AppConfig;
@@ -20,24 +19,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-
-import fatec.vortek.cimob.domain.model.RegistroVelocidade;
-import fatec.vortek.cimob.domain.enums.TipoVeiculo;
-import java.util.List;
-import java.util.Map;
-import java.util.EnumMap;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +32,6 @@ public class IndicadorServiceImpl implements IndicadorService {
 
     private final IndicadorRepository repository;
     private final EventoRepository eventoRepository;
-    private final RadarRepository radarRepository;
     private final RegiaoService regiaoService;
     private final RegistroVelocidadeRepository registroVelocidadeRepository;
     private final TimelineServiceImpl timelineService;
