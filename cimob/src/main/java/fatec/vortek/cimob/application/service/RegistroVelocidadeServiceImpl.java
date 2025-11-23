@@ -10,6 +10,7 @@ import fatec.vortek.cimob.infrastructure.repository.RadarRepository;
 import fatec.vortek.cimob.infrastructure.repository.RegiaoRepository;
 import fatec.vortek.cimob.infrastructure.repository.RegistroVelocidadeRepository;
 import fatec.vortek.cimob.presentation.dto.request.RegistroVelocidadeRequestDTO;
+import fatec.vortek.cimob.presentation.dto.response.RegistroVelocidadeListagemResponseDTO;
 import fatec.vortek.cimob.presentation.dto.response.RegistroVelocidadeResponseDTO;
 
 import org.springframework.cache.annotation.Cacheable;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -29,7 +31,9 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
     private final RadarRepository radarRepository;
     private final RegiaoRepository regiaoRepository;
 
-    public RegistroVelocidadeServiceImpl(RegistroVelocidadeRepository registroVelocidadeRepository, RadarRepository radarRepository, RegiaoRepository regiaoRepository) {
+    public RegistroVelocidadeServiceImpl(RegistroVelocidadeRepository registroVelocidadeRepository,
+                                         RadarRepository radarRepository,
+                                         RegiaoRepository regiaoRepository) {
         this.registroVelocidadeRepository = registroVelocidadeRepository;
         this.radarRepository = radarRepository;
         this.regiaoRepository = regiaoRepository;
@@ -71,6 +75,22 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<RegistroVelocidadeListagemResponseDTO> buscarPorFiltro(String radarId, Long regiaoId, boolean todasRegioes, LocalDateTime dataInicio, LocalDateTime dataFim) {
+        List<RegistroVelocidade> registros = registroVelocidadeRepository.findByFiltros(
+                radarId,
+                regiaoId,
+                todasRegioes,
+                dataInicio,
+                dataFim
+        );
+
+        return registros.stream()
+                .map(this::toListagemResponseDTO)
+                .toList();
+    }
+
+    @Override
     @Transactional
     public void deletar(Long id) {
         if (!registroVelocidadeRepository.existsById(id)) {
@@ -81,6 +101,32 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
 
     private RegistroVelocidadeResponseDTO toResponseDTO(RegistroVelocidade registro) {
         return RegistroVelocidadeResponseDTO.RegistroVelocidadeModel2ResponseDTO(registro);
+    }
+
+    private RegistroVelocidadeListagemResponseDTO toListagemResponseDTO(RegistroVelocidade registro) {
+        Radar radar = registro.getRadar();
+        Regiao regiao = registro.getRegiao() != null ? registro.getRegiao() : (radar != null ? radar.getRegiao() : null);
+
+        String regiaoId = regiao != null ? String.valueOf(regiao.getRegiaoId()) : null;
+        String radarId = radar != null ? radar.getRadarId() : null;
+        String velocidadePermitida = radar != null && radar.getVelocidadePermitida() != null
+                ? radar.getVelocidadePermitida().toString()
+                : null;
+
+        String dataFormatada = registro.getData() != null
+                ? registro.getData().format(DateTimeFormatter.ofPattern("dd/MM/yy"))
+                : null;
+
+        return new RegistroVelocidadeListagemResponseDTO(
+                registro.getRegistroVelocidadeId() != null ? registro.getRegistroVelocidadeId().toString() : null,
+                radarId,
+                regiaoId,
+                registro.getTipoVeiculo() != null ? registro.getTipoVeiculo().getDescricao() : null,
+                registro.getVelocidadeRegistrada() != null ? registro.getVelocidadeRegistrada().toString() : null,
+                velocidadePermitida,
+                dataFormatada,
+                String.valueOf(registro.getDeletado())
+        );
     }
 
     @Override
@@ -130,4 +176,6 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
                 .map(RegistroVelocidadeCache::Model2ModelCache)
                 .collect(Collectors.toList());
     }
+
+    // demais métodos mantêm cache/transactions existentes
 }
