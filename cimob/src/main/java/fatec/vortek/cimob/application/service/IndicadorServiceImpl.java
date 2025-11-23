@@ -6,15 +6,22 @@ import fatec.vortek.cimob.domain.model.Indicador;
 import fatec.vortek.cimob.domain.model.Regiao;
 import fatec.vortek.cimob.domain.model.Radar;
 import fatec.vortek.cimob.domain.model.RegistroVelocidade;
+import fatec.vortek.cimob.domain.model.RegistroVelocidadeCache;
 import fatec.vortek.cimob.domain.service.IndicadorService;
+import fatec.vortek.cimob.domain.service.RadarService;
 import fatec.vortek.cimob.domain.service.RegiaoService;
+import fatec.vortek.cimob.domain.service.RegistroVelocidadeService;
 import fatec.vortek.cimob.infrastructure.repository.IndicadorRepository;
+import fatec.vortek.cimob.infrastructure.repository.RadarRepository;
+import fatec.vortek.cimob.infrastructure.repository.RegiaoRepository;
 import fatec.vortek.cimob.infrastructure.repository.EventoRepository;
 import fatec.vortek.cimob.infrastructure.repository.RegistroVelocidadeRepository;
 import fatec.vortek.cimob.infrastructure.config.AppConfig;
 import fatec.vortek.cimob.presentation.dto.response.IndiceCriticoResponseDTO;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -33,8 +40,10 @@ public class IndicadorServiceImpl implements IndicadorService {
     private final IndicadorRepository repository;
     private final EventoRepository eventoRepository;
     private final RegiaoService regiaoService;
+    private final RegiaoRepository regiaoRepository;
     private final RegistroVelocidadeRepository registroVelocidadeRepository;
     private final TimelineServiceImpl timelineService;
+    private final RegistroVelocidadeService registroVelocidadeService;
     
     // private record PontoHoraKey(String radarId, int hora) {
     // }
@@ -92,14 +101,30 @@ public class IndicadorServiceImpl implements IndicadorService {
 
     @Override
     public List<Indicador> listarTodos(String timestamp) {
+        return listarTodos(timestamp, null);
+    }
+
+    @Override
+    public List<Indicador> listarTodos(String timestamp, String radarId) {
+
         List<Indicador> indicadores = repository.findAll().stream()
                 .filter(ind -> !"S".equals(ind.getDeletado()))
                 .filter(ind -> !"S".equals(ind.getOculto()))
-                .collect(Collectors.toList());
+                .toList();
 
         List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(null, timestamp);
 
-        indicadores.forEach(indicador -> calcularValorIndicadoresComRegistros(indicador, registros));
+        List<RegistroVelocidade> registrosFiltrados =
+                (radarId != null && !radarId.isBlank())
+                ? registros.stream()
+                    .filter(r -> r.getRadarId() != null &&
+                                radarId.equals(r.getRadarId()))
+                    .toList()
+                : registros;
+
+        for (Indicador indicador : indicadores) {
+            calcularValorIndicadoresComRegistros(indicador, registrosFiltrados);
+        }
 
         return indicadores;
     }
@@ -109,23 +134,38 @@ public class IndicadorServiceImpl implements IndicadorService {
         return listarPorRegiao(regiaoId, null);
     }
 
-    @Override
     public List<Indicador> listarPorRegiao(Long regiaoId, String timestamp) {
+        return listarPorRegiao(regiaoId, timestamp, null);
+    }
+
+    @Override
+    public List<Indicador> listarPorRegiao(Long regiaoId, String timestamp, String radarId) {
+
         Regiao regiao = regiaoService.buscarPorId(regiaoId);
         if (regiao == null) {
             throw new RuntimeException("Região não encontrada com ID: " + regiaoId);
         }
 
-        List<Indicador> todosIndicadores = repository.findAll().stream()
-                .filter(indicador -> !"S".equals(indicador.getDeletado()))
-                .filter(indicador -> !"S".equals(indicador.getOculto()))
-                .collect(Collectors.toList());
+        List<Indicador> indicadores = repository.findAll().stream()
+                .filter(ind -> !"S".equals(ind.getDeletado()))
+                .filter(ind -> !"S".equals(ind.getOculto()))
+                .toList();
 
         List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
 
-        todosIndicadores.forEach(indicador -> calcularValorIndicadoresComRegistros(indicador, registros));
+        List<RegistroVelocidade> registrosFiltrados =
+                (radarId != null && !radarId.isBlank())
+                        ? registros.stream()
+                            .filter(r -> r.getRadarId() != null &&
+                                        radarId.equals(r.getRadarId()))
+                            .toList()
+                        : registros;
 
-        return todosIndicadores;
+        for (Indicador indicador : indicadores) {
+            calcularValorIndicadoresComRegistros(indicador, registrosFiltrados);
+        }
+
+        return indicadores;
     }
 
     @Override
@@ -264,6 +304,7 @@ public class IndicadorServiceImpl implements IndicadorService {
 
     public Indicador calcularValorIndicadoresPorRegiao(Indicador indicador, Long regiaoId, String timestamp) {
         List<RegistroVelocidade> registros = buscarRegistrosPorRegiao(regiaoId, timestamp);
+
         return calcularValorIndicadoresComRegistros(indicador, registros);
     }
 
@@ -472,45 +513,39 @@ public class IndicadorServiceImpl implements IndicadorService {
     }
 
     private List<RegistroVelocidade> buscarRegistrosPorRegiao(Long regiaoId, String timestamp) {
-        LocalDateTime inicioPeriodo;
-        LocalDateTime fimPeriodo;
+        List<RegistroVelocidadeCache> cached =
+                registroVelocidadeService.buscarRegistrosPorRegiao(regiaoId, timestamp);
 
-        if (timestamp != null && !timestamp.isEmpty()) {
-            try {
-                // Se timestamp fornecido, usar ele como ponto de referência
-                // Frontend agora envia horário local sem timezone
-                LocalDateTime timestampRef = LocalDateTime.parse(timestamp);
+        if (cached.isEmpty()) return List.of();
 
-                inicioPeriodo = timestampRef.minusMinutes(AppConfig.getTimeWindowMinutes());
-                fimPeriodo = timestampRef;
-            } catch (DateTimeParseException ex) {
-                try {
-                    // Fallback para formato sem segundos
-                    DateTimeFormatter fmtSemSegundos = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-                    LocalDateTime timestampRef = LocalDateTime.parse(timestamp, fmtSemSegundos);
-                    inicioPeriodo = timestampRef.minusMinutes(AppConfig.getTimeWindowMinutes());
-                    fimPeriodo = timestampRef;
-                } catch (DateTimeParseException ex2) {
-                    // Se ainda falhar, usar comportamento padrão
-                    LocalDateTime agora = LocalDateTime.now();
-                    inicioPeriodo = agora.minusMinutes(AppConfig.getTimeWindowMinutes());
-                    fimPeriodo = agora;
-                }
-            }
-        } else {
-            // Comportamento padrão: últimos X minutos (AppConfig)
-            LocalDateTime agora = LocalDateTime.now();
-            inicioPeriodo = agora.minusMinutes(AppConfig.getTimeWindowMinutes());
-            fimPeriodo = agora;
-        }
+        List<String> radarIds = cached.stream()
+                .map(RegistroVelocidadeCache::getRadarId)
+                .distinct()
+                .toList();
 
-        if (regiaoId == null) {
-            return registroVelocidadeRepository.findByDataBetweenAndDeletado(inicioPeriodo, fimPeriodo);
-        } else {
-            return registroVelocidadeRepository.findByDataBetweenAndRegiaoAndDeletado(inicioPeriodo, fimPeriodo, regiaoId);
-        }
+        List<Long> regiaoIds = cached.stream()
+                .map(RegistroVelocidadeCache::getRegiaoId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        Map<String, Radar> radarMap = radarRepository.findAllById(radarIds)
+                .stream()
+                .collect(Collectors.toMap(Radar::getRadarId, r -> r));
+
+        Map<Long, Regiao> regiaoMap = regiaoRepository.findAllById(regiaoIds)
+                .stream()
+                .collect(Collectors.toMap(Regiao::getRegiaoId, r -> r));
+
+        return cached.stream()
+                .map(c -> {
+                    RegistroVelocidade m = RegistroVelocidadeCache.ModelCache2Model(c);
+                    m.setRadar(radarMap.get(c.getRadarId()));
+                    m.setRegiao(regiaoMap.get(c.getRegiaoId()));
+                    return m;
+                })
+                .toList();
     }
-
 
     // TODO: UTIL PARA DASHS
 

@@ -5,6 +5,7 @@ import fatec.vortek.cimob.domain.enums.IndicadorMnemonico;
 import fatec.vortek.cimob.domain.model.Indicador;
 import fatec.vortek.cimob.presentation.dto.request.IndicadorRequestDTO;
 import fatec.vortek.cimob.presentation.dto.response.IndicadorResponseDTO;
+import fatec.vortek.cimob.presentation.dto.response.IndicadorRadarResponseDTO;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;

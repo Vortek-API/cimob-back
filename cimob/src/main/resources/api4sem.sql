@@ -6,7 +6,7 @@
 CREATE TABLE Usuario (
     usuarioId   NUMBER PRIMARY KEY,
     cpf         CHAR(11) UNIQUE NOT NULL,
-    nome        VARCHAR2(100) NOT NULL,
+    nomeCompleto VARCHAR2(100) NOT NULL,
     email       VARCHAR2(150) UNIQUE NOT NULL,
     cargo       VARCHAR2(100),
     deletado    CHAR(1) DEFAULT 'N' CHECK (deletado IN ('S','N')),
@@ -121,14 +121,11 @@ CREATE TABLE Indicador (
 -- Evento
 CREATE TABLE Evento (
     eventoId     NUMBER PRIMARY KEY,
-    indicadorId  NUMBER NOT NULL,
     nome         VARCHAR2(100) NOT NULL,
     data         DATE DEFAULT SYSDATE NOT NULL,
     descricao    VARCHAR2(255),
     usuarioId    NUMBER,
     deletado     CHAR(1) DEFAULT 'N' CHECK (deletado IN ('S','N')),
-    CONSTRAINT fk_evento_indicador FOREIGN KEY (indicadorId)
-        REFERENCES Indicador(indicadorId),
     CONSTRAINT fk_evento_usuario FOREIGN KEY (usuarioId)
         REFERENCES Usuario(usuarioId)
 );
