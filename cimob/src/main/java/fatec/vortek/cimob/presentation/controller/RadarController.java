@@ -87,11 +87,18 @@ public class RadarController {
     }
 
     @GetMapping("/{radarId}/indicadores")
-    public ResponseEntity<List<IndicadorRadarResponseDTO>> listarIndicadores(
+    public ResponseEntity<List<IndicadorRadarResponseDTO>> listarIndicadoresPorRadar(
             @PathVariable String radarId,
             @RequestParam(required = false) String timestamp) {
 
         return ResponseEntity.ok(radarService.listarIndicadores(timestamp, radarId));
+    }
+
+     @GetMapping("/indicadores")
+    public ResponseEntity<List<IndicadorRadarResponseDTO>> listarIndicadores(
+            @RequestParam(required = false) String timestamp) {
+
+        return ResponseEntity.ok(radarService.listarIndicadores(timestamp));
     }
 
     @PutMapping("/{id}")

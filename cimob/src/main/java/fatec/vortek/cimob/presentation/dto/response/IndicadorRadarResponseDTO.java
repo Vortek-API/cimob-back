@@ -10,24 +10,12 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class IndicadorRadarResponseDTO {
-    private Long indicadorId;
-    private String nome;
-    private Double valor;
-    private IndicadorMnemonico mnemonico;
-    private Boolean oculto;
-    private String descricao;
-    private Long usuarioId;
+    IndicadorResponseDTO indicador;
     private String radarId;
 
     public static IndicadorRadarResponseDTO IndicadorModel2RadarResponseDTO(Indicador indicador, String radarId) {
         return new IndicadorRadarResponseDTO(
-                indicador.getIndicadorId(),
-                indicador.getNome(),
-                indicador.getValor(),
-                indicador.getMnemonico(),
-                indicador.getOculto().equals("S"),
-                indicador.getDescricao(),
-                indicador.getUsuario() != null ? indicador.getUsuario().getUsuarioId() : null,
+                IndicadorResponseDTO.IndicadorModel2ResponseDTO(indicador),
                 radarId
         );
     }

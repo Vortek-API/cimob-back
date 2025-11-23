@@ -9,6 +9,7 @@ import fatec.vortek.cimob.presentation.dto.response.IndicadorResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -38,9 +39,22 @@ public class RadarServiceImpl implements RadarService {
     }
 
     @Override
+    public List<IndicadorRadarResponseDTO> listarIndicadores(String timestamp) {
+        List<Radar> radares = repository.findAll();
+
+        List<IndicadorRadarResponseDTO> retorno = new ArrayList<>();
+
+        for (Radar radar : radares) {
+            retorno.addAll(listarIndicadores(timestamp, radar.getRadarId()));
+        }
+        return retorno;
+    }
+
+
+    @Override
     public List<IndicadorRadarResponseDTO> listarIndicadores(String timestamp, String radarId)
     {
-        List<Indicador> indicadores = indicadorService.listarTodos(timestamp).stream()
+        List<Indicador> indicadores = indicadorService.listarTodos(timestamp, radarId).stream()
                     .filter(i -> !"S".equals(i.getDeletado()))
                     .collect(Collectors.toList());
 

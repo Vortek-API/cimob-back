@@ -13,4 +13,5 @@ public interface RadarService {
     Radar buscarPorId(String id);
     List<Radar> listarTodos();
     List<IndicadorRadarResponseDTO> listarIndicadores(String timestamp, String radarId);
+    List<IndicadorRadarResponseDTO> listarIndicadores(String timestamp);
 }
