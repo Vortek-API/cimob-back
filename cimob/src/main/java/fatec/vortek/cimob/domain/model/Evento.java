@@ -44,4 +44,12 @@ public class Evento {
             inverseJoinColumns = @JoinColumn(name = "indicadorId")
     )
     private List<Indicador> indicadores;
+
+    @ManyToMany
+    @JoinTable(
+            name = "EventoRegiao",
+            joinColumns = @JoinColumn(name = "eventoId"),
+            inverseJoinColumns = @JoinColumn(name = "regiaoId")
+    )
+    private List<Regiao> regioes;
 }

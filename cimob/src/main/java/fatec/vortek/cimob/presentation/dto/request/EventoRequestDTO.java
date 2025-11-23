@@ -1,8 +1,11 @@
 package fatec.vortek.cimob.presentation.dto.request;
 
-import lombok.*;
-
 import java.util.List;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
@@ -14,4 +17,6 @@ public class EventoRequestDTO {
     private Long usuarioId;
     private Long indicadorPrincipalId;
     private List<Long> indicadoresIds; // para N:N
+
+    private List<Long> regioesIds;
 }

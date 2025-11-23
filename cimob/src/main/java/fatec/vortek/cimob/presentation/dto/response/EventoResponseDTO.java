@@ -17,4 +17,6 @@ public class EventoResponseDTO {
     private Long usuarioId;
     private Long indicadorPrincipalId;
     private List<Long> indicadoresIds;
+
+    private List<Long> regioesIds;
 }
