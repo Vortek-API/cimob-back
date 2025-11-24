@@ -27,23 +27,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-
-import fatec.vortek.cimob.domain.model.RegistroVelocidade;
-import fatec.vortek.cimob.domain.enums.TipoVeiculo;
-import java.util.List;
-import java.util.Map;
-import java.util.EnumMap;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
