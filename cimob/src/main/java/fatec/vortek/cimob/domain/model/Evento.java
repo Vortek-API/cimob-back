@@ -4,11 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "Evento")
@@ -28,6 +25,8 @@ public class Evento {
     @Column(nullable = false)
     private LocalDateTime dataInicio;
 
+    private LocalDateTime dataFim;
+
     @Column(length = 255)
     private String descricao;
 
@@ -38,8 +37,6 @@ public class Evento {
     @Column(length = 1)
     @Builder.Default
     private String deletado = "N";
-    
-    private LocalDateTime dataFim;
 
     @ManyToMany
     @JoinTable(
@@ -48,5 +45,5 @@ public class Evento {
             inverseJoinColumns = @JoinColumn(name = "regiaoId")
     )
     @Builder.Default
-    private List<Regiao> regioes = new ArrayList<Regiao>();
+    private List<Regiao> regioes = new ArrayList<>();
 }
