@@ -23,6 +23,7 @@ import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,28 +82,46 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
     @Override
     @Transactional(readOnly = true)
     public List<RegistroVelocidadeListagemResponseDTO> buscarPorFiltro(String radarId, Long regiaoId, boolean todasRegioes, LocalDateTime dataInicio, LocalDateTime dataFim) {
+        String radarFiltro = radarId;
+        boolean todasRegioesFiltro = todasRegioes;
+
+        // Se vier "all" no radar, consideramos todas as regiões/radares
+        if (radarFiltro != null && radarFiltro.equalsIgnoreCase("all")) {
+            radarFiltro = null;
+            todasRegioesFiltro = true;
+        }
+
         log.info("Buscando registros por filtro - radarId: {}, regiaoId: {}, todasRegioes: {}, dataInicio: {}, dataFim: {}",
-                radarId, regiaoId, todasRegioes, dataInicio, dataFim);
+                radarFiltro, regiaoId, todasRegioesFiltro, dataInicio, dataFim);
 
         List<RegistroVelocidadeCache> cached;
         Long regiaoParaBusca = regiaoId;
 
-        if (regiaoParaBusca == null && radarId != null && !radarId.isBlank()) {
-            Radar radar = radarRepository.findById(radarId)
-                    .orElseThrow(() -> new RuntimeException("Radar não encontrado com ID: " + radarId));
+        final String radarFiltroForError = radarFiltro;
+        if (regiaoParaBusca == null && radarFiltro != null && !radarFiltro.isBlank()) {
+            Radar radar = radarRepository.findById(radarFiltro)
+                    .orElseThrow(() -> new RuntimeException("Radar não encontrado com ID: " + radarFiltroForError));
             regiaoParaBusca = radar.getRegiao() != null ? radar.getRegiao().getRegiaoId() : null;
         }
 
-        if (regiaoParaBusca != null) {
+        if (todasRegioesFiltro) {
+            List<Regiao> regioes = regiaoRepository.findAll();
+            cached = new ArrayList<>();
+            for (Regiao r : regioes) {
+                if (r != null && !"S".equalsIgnoreCase(r.getDeletado())) {
+                    cached.addAll(buscarRegistrosPorRegiao(r.getRegiaoId(), null));
+                }
+            }
+        } else if (regiaoParaBusca != null) {
             cached = buscarRegistrosPorRegiao(regiaoParaBusca, null);
-        } else if (todasRegioes) {
-            cached = buscarRegistrosPorRegiao(null, null);
         } else {
             throw new RuntimeException("Região não informada e radarId não encontrado.");
         }
 
+        final String radarFiltroFinal = radarFiltro;
+
         List<RegistroVelocidadeListagemResponseDTO> resposta = cached.stream()
-                .filter(r -> radarId == null || radarId.isBlank() || radarId.equals(r.getRadarId()))
+                .filter(r -> radarFiltroFinal == null || radarFiltroFinal.isBlank() || radarFiltroFinal.equals(r.getRadarId()))
                 .map(this::toListagemResponseDTO)
                 .toList();
 
