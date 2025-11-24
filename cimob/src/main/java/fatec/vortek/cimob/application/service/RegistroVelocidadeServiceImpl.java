@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -102,13 +103,6 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
 
         List<RegistroVelocidadeListagemResponseDTO> resposta = cached.stream()
                 .filter(r -> radarId == null || radarId.isBlank() || radarId.equals(r.getRadarId()))
-                .filter(r -> {
-                    if (dataInicio == null && dataFim == null) return true;
-                    if (r.getData() == null) return false;
-                    boolean afterStart = dataInicio == null || !r.getData().isBefore(dataInicio);
-                    boolean beforeEnd = dataFim == null || !r.getData().isAfter(dataFim);
-                    return afterStart && beforeEnd;
-                })
                 .map(this::toListagemResponseDTO)
                 .toList();
 
@@ -183,13 +177,39 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
     }
 
     @Override
-    @Cacheable(value = "buscarRegistrosPorRegiao", key = "#regiaoId != null ? #regiaoId : 'ALL'")
+    @Cacheable(value = "buscarRegistrosPorRegiao", key = "{#regiaoId, #timestamp}")
     public List<RegistroVelocidadeCache> buscarRegistrosPorRegiao(Long regiaoId, String timestamp) {
+        LocalDateTime inicioPeriodo;
+        LocalDateTime fimPeriodo;
+
+        if (timestamp != null && !timestamp.isEmpty()) {
+            try {
+                LocalDateTime timestampRef = LocalDateTime.parse(timestamp);
+                inicioPeriodo = timestampRef.minusMinutes(AppConfig.getTimeWindowMinutes());
+                fimPeriodo = timestampRef;
+            } catch (DateTimeParseException ex) {
+                try {
+                    DateTimeFormatter fmtSemSegundos = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+                    LocalDateTime timestampRef = LocalDateTime.parse(timestamp, fmtSemSegundos);
+                    inicioPeriodo = timestampRef.minusMinutes(AppConfig.getTimeWindowMinutes());
+                    fimPeriodo = timestampRef;
+                } catch (DateTimeParseException ex2) {
+                    LocalDateTime agora = LocalDateTime.now();
+                    inicioPeriodo = agora.minusMinutes(AppConfig.getTimeWindowMinutes());
+                    fimPeriodo = agora;
+                }
+            }
+        } else {
+            LocalDateTime agora = LocalDateTime.now();
+            inicioPeriodo = agora.minusMinutes(AppConfig.getTimeWindowMinutes());
+            fimPeriodo = agora;
+        }
+
         List<RegistroVelocidade> resultado;
         if (regiaoId == null) {
-            resultado = registroVelocidadeRepository.findByFiltros(null, null, true, null, null);
+            resultado = registroVelocidadeRepository.findByDataBetweenAndDeletado(inicioPeriodo, fimPeriodo);
         } else {
-            resultado = registroVelocidadeRepository.findByFiltros(null, regiaoId, false, null, null);
+            resultado = registroVelocidadeRepository.findByDataBetweenAndRegiaoAndDeletado(inicioPeriodo, fimPeriodo, regiaoId);
         }
         return resultado.stream()
                 .map(RegistroVelocidadeCache::Model2ModelCache)
