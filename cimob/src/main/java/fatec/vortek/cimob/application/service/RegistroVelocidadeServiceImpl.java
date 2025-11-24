@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -84,19 +83,36 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
         log.info("Buscando registros por filtro - radarId: {}, regiaoId: {}, todasRegioes: {}, dataInicio: {}, dataFim: {}",
                 radarId, regiaoId, todasRegioes, dataInicio, dataFim);
 
-        List<RegistroVelocidade> registros = registroVelocidadeRepository.findByFiltros(
-                radarId,
-                regiaoId,
-                todasRegioes,
-                dataInicio,
-                dataFim
-        );
+        List<RegistroVelocidadeCache> cached;
+        Long regiaoParaBusca = regiaoId;
 
-        List<RegistroVelocidadeListagemResponseDTO> resposta = registros.stream()
+        if (regiaoParaBusca == null && radarId != null && !radarId.isBlank()) {
+            Radar radar = radarRepository.findById(radarId)
+                    .orElseThrow(() -> new RuntimeException("Radar não encontrado com ID: " + radarId));
+            regiaoParaBusca = radar.getRegiao() != null ? radar.getRegiao().getRegiaoId() : null;
+        }
+
+        if (regiaoParaBusca != null) {
+            cached = buscarRegistrosPorRegiao(regiaoParaBusca, null);
+        } else if (todasRegioes) {
+            cached = buscarRegistrosPorRegiao(null, null);
+        } else {
+            throw new RuntimeException("Região não informada e radarId não encontrado.");
+        }
+
+        List<RegistroVelocidadeListagemResponseDTO> resposta = cached.stream()
+                .filter(r -> radarId == null || radarId.isBlank() || radarId.equals(r.getRadarId()))
+                .filter(r -> {
+                    if (dataInicio == null && dataFim == null) return true;
+                    if (r.getData() == null) return false;
+                    boolean afterStart = dataInicio == null || !r.getData().isBefore(dataInicio);
+                    boolean beforeEnd = dataFim == null || !r.getData().isAfter(dataFim);
+                    return afterStart && beforeEnd;
+                })
                 .map(this::toListagemResponseDTO)
                 .toList();
 
-        log.info("Total de registros encontrados: {}", resposta.size());
+        log.info("Total de registros encontrados (cache): {}", resposta.size());
         return resposta;
     }
 
@@ -111,6 +127,33 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
 
     private RegistroVelocidadeResponseDTO toResponseDTO(RegistroVelocidade registro) {
         return RegistroVelocidadeResponseDTO.RegistroVelocidadeModel2ResponseDTO(registro);
+    }
+
+    private RegistroVelocidadeListagemResponseDTO toListagemResponseDTO(RegistroVelocidadeCache registro) {
+        Radar radar = null;
+        if (registro.getRadarId() != null) {
+            radar = radarRepository.findById(registro.getRadarId()).orElse(null);
+        }
+        String velocidadePermitida = radar != null && radar.getVelocidadePermitida() != null
+                ? radar.getVelocidadePermitida().toString()
+                : null;
+
+        String dataFormatada = registro.getData() != null
+                ? registro.getData().format(DateTimeFormatter.ofPattern("dd/MM/yy"))
+                : null;
+
+        String regiaoId = registro.getRegiaoId() != null ? registro.getRegiaoId().toString() : null;
+
+        return new RegistroVelocidadeListagemResponseDTO(
+                registro.getRegistroVelocidadeId() != null ? registro.getRegistroVelocidadeId().toString() : null,
+                registro.getRadarId(),
+                regiaoId,
+                registro.getTipoVeiculo() != null ? registro.getTipoVeiculo().getDescricao() : null,
+                registro.getVelocidadeRegistrada() != null ? registro.getVelocidadeRegistrada().toString() : null,
+                velocidadePermitida,
+                dataFormatada,
+                String.valueOf(registro.getDeletado())
+        );
     }
 
     private RegistroVelocidadeListagemResponseDTO toListagemResponseDTO(RegistroVelocidade registro) {
@@ -140,47 +183,13 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
     }
 
     @Override
-    @Cacheable(
-    value = "buscarRegistrosPorRegiao",
-    key = "{#regiaoId, #timestamp}"
-    )
+    @Cacheable(value = "buscarRegistrosPorRegiao", key = "#regiaoId != null ? #regiaoId : 'ALL'")
     public List<RegistroVelocidadeCache> buscarRegistrosPorRegiao(Long regiaoId, String timestamp) {
-        LocalDateTime inicioPeriodo;
-        LocalDateTime fimPeriodo;
-
-        if (timestamp != null && !timestamp.isEmpty()) {
-            try {
-                // Se timestamp fornecido, usar ele como ponto de referência
-                // Frontend agora envia horário local sem timezone
-                LocalDateTime timestampRef = LocalDateTime.parse(timestamp);
-
-                inicioPeriodo = timestampRef.minusMinutes(AppConfig.getTimeWindowMinutes());
-                fimPeriodo = timestampRef;
-            } catch (DateTimeParseException ex) {
-                try {
-                    // Fallback para formato sem segundos
-                    DateTimeFormatter fmtSemSegundos = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
-                    LocalDateTime timestampRef = LocalDateTime.parse(timestamp, fmtSemSegundos);
-                    inicioPeriodo = timestampRef.minusMinutes(AppConfig.getTimeWindowMinutes());
-                    fimPeriodo = timestampRef;
-                } catch (DateTimeParseException ex2) {
-                    // Se ainda falhar, usar comportamento padrão
-                    LocalDateTime agora = LocalDateTime.now();
-                    inicioPeriodo = agora.minusMinutes(AppConfig.getTimeWindowMinutes());
-                    fimPeriodo = agora;
-                }
-            }
-        } else {
-            // Comportamento padrão: últimos X minutos (AppConfig)
-            LocalDateTime agora = LocalDateTime.now();
-            inicioPeriodo = agora.minusMinutes(AppConfig.getTimeWindowMinutes());
-            fimPeriodo = agora;
-        }
         List<RegistroVelocidade> resultado;
         if (regiaoId == null) {
-            resultado = registroVelocidadeRepository.findByDataBetweenAndDeletado(inicioPeriodo, fimPeriodo);
+            resultado = registroVelocidadeRepository.findByFiltros(null, null, true, null, null);
         } else {
-            resultado = registroVelocidadeRepository.findByDataBetweenAndRegiaoAndDeletado(inicioPeriodo, fimPeriodo, regiaoId);
+            resultado = registroVelocidadeRepository.findByFiltros(null, regiaoId, false, null, null);
         }
         return resultado.stream()
                 .map(RegistroVelocidadeCache::Model2ModelCache)
