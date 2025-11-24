@@ -50,19 +50,35 @@ public class RegistroVelocidadeController {
 
     @GetMapping("/filtro")
     public ResponseEntity<List<RegistroVelocidadeListagemResponseDTO>> listarPorFiltro(@RequestParam(required = false) String radarId,
-                                                                                      @RequestParam(required = false) Long regiaoId,
-                                                                                      @RequestParam(defaultValue = "false") boolean todasRegioes,
-                                                                                      @RequestParam(required = false) String dataInicio,
-                                                                                      @RequestParam(required = false) String dataFim) {
-        log.info("Filtro recebido - radarId: {}, regiaoId: {}, todasRegioes: {}, dataInicio: {}, dataFim: {}",
-                radarId, regiaoId, todasRegioes, dataInicio, dataFim);
+                                                                                       @RequestParam(required = false) String regiaoId,
+                                                                                       @RequestParam(defaultValue = "false") boolean todasRegioes,
+                                                                                       @RequestParam(required = false) String dataInicio,
+                                                                                       @RequestParam(required = false) String dataFim) {
+        Long regiaoIdLong = null;
+        boolean todasRegioesEfetivo = todasRegioes;
 
-        if ((radarId == null || radarId.isBlank()) && !todasRegioes && regiaoId == null) {
+        if (regiaoId != null && !regiaoId.isBlank()) {
+            if ("all".equalsIgnoreCase(regiaoId)) {
+                todasRegioesEfetivo = true;
+            } else {
+                try {
+                    regiaoIdLong = Long.parseLong(regiaoId);
+                } catch (NumberFormatException ex) {
+                    log.warn("regiaoId não numérico recebido: {}", regiaoId);
+                    return ResponseEntity.badRequest().build();
+                }
+            }
+        }
+
+        log.info("Filtro recebido - radarId: {}, regiaoId: {}, todasRegioes: {}, dataInicio: {}, dataFim: {}",
+                radarId, regiaoIdLong, todasRegioesEfetivo, dataInicio, dataFim);
+
+        if ((radarId == null || radarId.isBlank()) && !todasRegioesEfetivo && regiaoIdLong == null) {
             log.warn("Filtro inválido: radarId/regiaoId/todasRegioes ausentes.");
             return ResponseEntity.badRequest().build();
         }
 
-        if (radarId != null && !radarId.isBlank() && (todasRegioes || regiaoId != null)) {
+        if (radarId != null && !radarId.isBlank() && (todasRegioesEfetivo || regiaoIdLong != null)) {
             log.warn("Filtro inválido: radarId informado junto com regiaoId ou todasRegioes=true.");
             return ResponseEntity.badRequest().build();
         }
@@ -92,8 +108,8 @@ public class RegistroVelocidadeController {
 
         List<RegistroVelocidadeListagemResponseDTO> resposta = registroVelocidadeService.buscarPorFiltro(
                 radarId,
-                regiaoId,
-                todasRegioes,
+                regiaoIdLong,
+                todasRegioesEfetivo,
                 inicioPeriodo,
                 fimPeriodo);
 
