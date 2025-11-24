@@ -3,7 +3,8 @@ package fatec.vortek.cimob.domain.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -16,32 +17,33 @@ public class Evento {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "eventoId")
     private Long eventoId;
 
     @Column(nullable = false, length = 100)
     private String nome;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(nullable = false)
-    private Date data = new Date();
+    private LocalDateTime dataInicio;
+
+    private LocalDateTime dataFim;
 
     @Column(length = 255)
     private String descricao;
 
-    
     @ManyToOne
     @JoinColumn(name = "usuarioId")
     private Usuario usuario;
 
-    @Column(length = 1, nullable = false)
+    @Column(length = 1)
+    @Builder.Default
     private String deletado = "N";
 
     @ManyToMany
     @JoinTable(
-            name = "EventoIndicador",
+            name = "EventoRegiao",
             joinColumns = @JoinColumn(name = "eventoId"),
-            inverseJoinColumns = @JoinColumn(name = "indicadorId")
+            inverseJoinColumns = @JoinColumn(name = "regiaoId")
     )
-    private List<Indicador> indicadores;
+    @Builder.Default
+    private List<Regiao> regioes = new ArrayList<>();
 }

@@ -11,7 +11,4 @@ public interface EventoService {
     void deletar(Long id);
     Evento buscarPorId(Long id);
     List<Evento> listarTodos();
-    void associarIndicador(Long eventoId, Long indicadorId);
-    void desassociarIndicador(Long eventoId, Long indicadorId);
-    List<Indicador> listarIndicadores(Long eventoId);
 }

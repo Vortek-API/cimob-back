@@ -6,8 +6,14 @@ import fatec.vortek.cimob.domain.enums.TimelineAcao;
 import fatec.vortek.cimob.domain.enums.TimelineTipo;
 import fatec.vortek.cimob.domain.model.Indicador;
 import fatec.vortek.cimob.domain.model.Usuario;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import fatec.vortek.cimob.domain.model.Timeline;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class TimelineResponseDTO {
     private Long timelineId;
     private TimelineTipo tipo;

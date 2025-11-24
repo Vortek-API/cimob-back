@@ -2,6 +2,7 @@ package fatec.vortek.cimob.application.service;
 
 import fatec.vortek.cimob.domain.enums.TimelineAcao;
 import fatec.vortek.cimob.domain.enums.TimelineTipo;
+import fatec.vortek.cimob.domain.model.Evento;
 import fatec.vortek.cimob.domain.model.Indicador;
 import fatec.vortek.cimob.domain.model.Timeline;
 import fatec.vortek.cimob.domain.model.Usuario;
@@ -87,5 +88,33 @@ public class TimelineServiceImpl implements TimelineService {
     public Timeline criarTimelineIndicadorDesoculto(Indicador indicador)
     {
         return criarTimelineIndicador(String.format("O indicador '%s' foi desocultado.", indicador.getNome()));
+    }
+
+    @Override
+    public Timeline criarTimelineEvento(String descricao, TimelineAcao acao)
+    {
+        Timeline timeline = new Timeline();
+        timeline.setAcao(acao);
+        timeline.setDescricao(descricao);
+        timeline.setData(java.time.LocalDateTime.now());
+        timeline.setTipo(TimelineTipo.EVENTO);
+        timeline.setUsuario(usuarioService.getUsuarioLogado());
+
+        return criar(timeline);
+    }
+
+    @Override
+    public Timeline criarTimelineCriacaoEvento(Evento evento) {
+        return criarTimelineEvento(String.format("O evento '%s' foi criado.", evento.getNome()), TimelineAcao.CRIACAO);
+    }
+
+    @Override
+    public Timeline criarTimelineAlteracaoEvento(Evento evento) {
+        return criarTimelineEvento(String.format("O evento '%s' foi alterado.", evento.getNome()), TimelineAcao.ALTERACAO);
+    }
+
+    @Override
+    public Timeline criarTimelineExclusaoEvento(Evento evento) {
+        return criarTimelineEvento(String.format("O evento '%s' foi excluído.", evento.getNome()), TimelineAcao.EXCLUSAO);
     }
 }

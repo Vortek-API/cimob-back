@@ -3,7 +3,7 @@ package fatec.vortek.cimob.domain.enums;
 public enum TimelineTipo {
     USUARIO("USUARIO"),
     INDICADOR("INDICADOR"),
-    EVENTOS("EVENTOS"),
+    EVENTO("EVENTO"),
     INDEFINIDO("INDEFINIDO");
 
     private final String descricao;

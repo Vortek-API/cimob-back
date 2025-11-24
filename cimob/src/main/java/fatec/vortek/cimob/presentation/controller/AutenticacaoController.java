@@ -60,4 +60,26 @@ public class AutenticacaoController {
             return ResponseEntity.status(400).body(e.getMessage());
         }
     }
+
+    @PostMapping("/recuperar-senha")
+    public ResponseEntity<?> recuperarSenha(@RequestBody fatec.vortek.cimob.presentation.dto.request.PasswordResetDTOs.ForgotPasswordRequest request) {
+        try {
+            authService.recuperarSenha(request.getEmail());
+            return ResponseEntity.ok("E-mail de recuperação enviado");
+        } catch (RuntimeException e) {
+            // Por segurança, não informamos se o e-mail existe ou não, mas logamos o erro
+            System.out.println("Erro ao recuperar senha: " + e.getMessage());
+            return ResponseEntity.ok("E-mail de recuperação enviado");
+        }
+    }
+
+    @PostMapping("/redefinir-senha")
+    public ResponseEntity<?> redefinirSenha(@RequestBody fatec.vortek.cimob.presentation.dto.request.PasswordResetDTOs.ResetPasswordRequest request) {
+        try {
+            authService.redefinirSenha(request.getToken(), request.getNewPassword());
+            return ResponseEntity.ok("Senha redefinida com sucesso");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(400).body(e.getMessage());
+        }
+    }
 }

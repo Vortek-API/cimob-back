@@ -1,68 +1,71 @@
 package fatec.vortek.cimob.application.service;
 
 import fatec.vortek.cimob.domain.model.Evento;
-import fatec.vortek.cimob.domain.model.Indicador;
+import fatec.vortek.cimob.domain.model.Regiao;
 import fatec.vortek.cimob.domain.service.EventoService;
+import fatec.vortek.cimob.domain.service.TimelineService;
 import fatec.vortek.cimob.infrastructure.repository.EventoRepository;
-import fatec.vortek.cimob.infrastructure.repository.IndicadorRepository;
+import fatec.vortek.cimob.infrastructure.repository.RegiaoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class EventoServiceImpl implements EventoService {
 
-    private final EventoRepository repository;
-    private final IndicadorRepository indicadorRepository;
+    private final EventoRepository eventoRepository;
+    private final RegiaoRepository regiaoRepository;
+    private final TimelineService timelineService;
 
     @Override
     public Evento criar(Evento evento) {
-        return repository.save(evento);
+        Evento salvo = eventoRepository.save(evento);
+        timelineService.criarTimelineCriacaoEvento(salvo);
+        return salvo;
     }
 
     @Override
     public Evento atualizar(Evento evento) {
-        return repository.save(evento);
+        Evento existente = eventoRepository.findById(evento.getEventoId())
+                .orElseThrow(() -> new RuntimeException("Evento não encontrado"));
+
+        existente.setNome(evento.getNome());
+        existente.setDescricao(evento.getDescricao());
+        existente.setDataInicio(evento.getDataInicio());
+        existente.setDataFim(evento.getDataFim());
+        existente.setUsuario(evento.getUsuario());
+
+        if (evento.getRegioes() != null) {
+            existente.setRegioes(evento.getRegioes());
+        }
+
+        Evento salvo = eventoRepository.save(existente);
+        timelineService.criarTimelineAlteracaoEvento(salvo);
+        return salvo;
     }
 
     @Override
     public void deletar(Long id) {
-        Evento e = repository.findById(id).orElseThrow();
+        Evento e = eventoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Evento não encontrado"));
+
         e.setDeletado("S");
-        repository.save(e);
+        eventoRepository.save(e);
+        timelineService.criarTimelineExclusaoEvento(e);
     }
 
     @Override
     public Evento buscarPorId(Long id) {
-        return repository.findById(id).orElse(null);
+        return eventoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Evento não encontrado"));
     }
 
     @Override
     public List<Evento> listarTodos() {
-        return repository.findAll();
-    }
-
-    @Override
-    public void associarIndicador(Long eventoId, Long indicadorId) {
-        Evento e = repository.findById(eventoId).orElseThrow();
-        Indicador i = indicadorRepository.findById(indicadorId).orElseThrow();
-        e.getIndicadores().add(i);
-        repository.save(e);
-    }
-
-    @Override
-    public void desassociarIndicador(Long eventoId, Long indicadorId) {
-        Evento e = repository.findById(eventoId).orElseThrow();
-        Indicador i = indicadorRepository.findById(indicadorId).orElseThrow();
-        e.getIndicadores().remove(i);
-        repository.save(e);
-    }
-
-    @Override
-    public List<Indicador> listarIndicadores(Long eventoId) {
-        Evento e = repository.findById(eventoId).orElseThrow();
-        return e.getIndicadores();
+        return eventoRepository.findAll();
     }
 }
