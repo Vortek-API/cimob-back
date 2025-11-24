@@ -7,6 +7,8 @@ import fatec.vortek.cimob.presentation.dto.response.RegistroVelocidadeListagemRe
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.time.LocalDate;
@@ -21,6 +23,8 @@ import java.util.List;
 @RequestMapping("/api/registros-velocidade")
 @Tag(name = "Registros de velocidade")
 public class RegistroVelocidadeController {
+
+    private static final Logger log = LoggerFactory.getLogger(RegistroVelocidadeController.class);
 
     private final RegistroVelocidadeService registroVelocidadeService;
 
@@ -46,15 +50,20 @@ public class RegistroVelocidadeController {
 
     @GetMapping("/filtro")
     public ResponseEntity<List<RegistroVelocidadeListagemResponseDTO>> listarPorFiltro(@RequestParam(required = false) String radarId,
-                                                                                       @RequestParam(required = false) Long regiaoId,
-                                                                                       @RequestParam(defaultValue = "false") boolean todasRegioes,
-                                                                                       @RequestParam(required = false) String dataInicio,
-                                                                                       @RequestParam(required = false) String dataFim) {
+                                                                                      @RequestParam(required = false) Long regiaoId,
+                                                                                      @RequestParam(defaultValue = "false") boolean todasRegioes,
+                                                                                      @RequestParam(required = false) String dataInicio,
+                                                                                      @RequestParam(required = false) String dataFim) {
+        log.info("Filtro recebido - radarId: {}, regiaoId: {}, todasRegioes: {}, dataInicio: {}, dataFim: {}",
+                radarId, regiaoId, todasRegioes, dataInicio, dataFim);
+
         if ((radarId == null || radarId.isBlank()) && !todasRegioes && regiaoId == null) {
+            log.warn("Filtro inválido: radarId/regiaoId/todasRegioes ausentes.");
             return ResponseEntity.badRequest().build();
         }
 
         if (radarId != null && !radarId.isBlank() && (todasRegioes || regiaoId != null)) {
+            log.warn("Filtro inválido: radarId informado junto com regiaoId ou todasRegioes=true.");
             return ResponseEntity.badRequest().build();
         }
 

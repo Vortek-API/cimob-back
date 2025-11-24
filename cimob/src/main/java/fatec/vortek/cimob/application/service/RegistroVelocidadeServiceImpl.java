@@ -16,6 +16,8 @@ import fatec.vortek.cimob.presentation.dto.response.RegistroVelocidadeResponseDT
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.LocalDate;
@@ -26,6 +28,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService {
+
+    private static final Logger log = LoggerFactory.getLogger(RegistroVelocidadeServiceImpl.class);
 
     private final RegistroVelocidadeRepository registroVelocidadeRepository;
     private final RadarRepository radarRepository;
@@ -77,6 +81,9 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
     @Override
     @Transactional(readOnly = true)
     public List<RegistroVelocidadeListagemResponseDTO> buscarPorFiltro(String radarId, Long regiaoId, boolean todasRegioes, LocalDateTime dataInicio, LocalDateTime dataFim) {
+        log.info("Buscando registros por filtro - radarId: {}, regiaoId: {}, todasRegioes: {}, dataInicio: {}, dataFim: {}",
+                radarId, regiaoId, todasRegioes, dataInicio, dataFim);
+
         List<RegistroVelocidade> registros = registroVelocidadeRepository.findByFiltros(
                 radarId,
                 regiaoId,
@@ -85,9 +92,12 @@ public class RegistroVelocidadeServiceImpl implements RegistroVelocidadeService 
                 dataFim
         );
 
-        return registros.stream()
+        List<RegistroVelocidadeListagemResponseDTO> resposta = registros.stream()
                 .map(this::toListagemResponseDTO)
                 .toList();
+
+        log.info("Total de registros encontrados: {}", resposta.size());
+        return resposta;
     }
 
     @Override
