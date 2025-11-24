@@ -50,4 +50,17 @@ public interface RegistroVelocidadeRepository extends JpaRepository<RegistroVelo
        List<RegistroVelocidade> findByRadar_RadarId(String radarId);
 
        Long countByRadar_RadarId(String radarId);
+
+       @Query("SELECT r FROM RegistroVelocidade r " +
+              "JOIN r.radar rad " +
+              "WHERE r.deletado = 'N' AND rad.deletado = 'N' " +
+              "AND (:radarId IS NULL OR rad.radarId = :radarId) " +
+              "AND (:todasRegioes = true OR :regiaoId IS NULL OR rad.regiao.regiaoId = :regiaoId) " +
+              "AND (:inicioDia IS NULL OR r.data >= :inicioDia) " +
+              "AND (:fimDia IS NULL OR r.data <= :fimDia)")
+       List<RegistroVelocidade> findByFiltros(@Param("radarId") String radarId,
+                                              @Param("regiaoId") Long regiaoId,
+                                              @Param("todasRegioes") boolean todasRegioes,
+                                              @Param("inicioDia") LocalDateTime inicioDia,
+                                              @Param("fimDia") LocalDateTime fimDia);
 }
