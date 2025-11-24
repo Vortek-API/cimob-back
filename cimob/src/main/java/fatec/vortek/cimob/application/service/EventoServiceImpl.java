@@ -3,6 +3,7 @@ package fatec.vortek.cimob.application.service;
 import fatec.vortek.cimob.domain.model.Evento;
 import fatec.vortek.cimob.domain.model.Regiao;
 import fatec.vortek.cimob.domain.service.EventoService;
+import fatec.vortek.cimob.domain.service.TimelineService;
 import fatec.vortek.cimob.infrastructure.repository.EventoRepository;
 import fatec.vortek.cimob.infrastructure.repository.RegiaoRepository;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +19,13 @@ public class EventoServiceImpl implements EventoService {
 
     private final EventoRepository eventoRepository;
     private final RegiaoRepository regiaoRepository;
+    private final TimelineService timelineService;
 
     @Override
     public Evento criar(Evento evento) {
-        return eventoRepository.save(evento);
+        Evento salvo = eventoRepository.save(evento);
+        timelineService.criarTimelineCriacaoEvento(salvo);
+        return salvo;
     }
 
     @Override
@@ -39,7 +43,9 @@ public class EventoServiceImpl implements EventoService {
             existente.setRegioes(evento.getRegioes());
         }
 
-        return eventoRepository.save(existente);
+        Evento salvo = eventoRepository.save(existente);
+        timelineService.criarTimelineAlteracaoEvento(salvo);
+        return salvo;
     }
 
     @Override
@@ -49,6 +55,7 @@ public class EventoServiceImpl implements EventoService {
 
         e.setDeletado("S");
         eventoRepository.save(e);
+        timelineService.criarTimelineExclusaoEvento(e);
     }
 
     @Override

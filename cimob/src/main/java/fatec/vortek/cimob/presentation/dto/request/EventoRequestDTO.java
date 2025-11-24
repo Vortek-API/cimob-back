@@ -15,7 +15,5 @@ public class EventoRequestDTO {
     private String descricao;
     private LocalDateTime dataInicio;
     private LocalDateTime dataFim;
-
-    private Long usuarioId;
     private List<Long> regioesIds;
 }

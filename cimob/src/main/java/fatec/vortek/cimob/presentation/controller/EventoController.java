@@ -3,7 +3,10 @@ package fatec.vortek.cimob.presentation.controller;
 import fatec.vortek.cimob.application.service.EventoServiceImpl;
 import fatec.vortek.cimob.domain.model.Evento;
 import fatec.vortek.cimob.domain.model.Regiao;
+import fatec.vortek.cimob.domain.model.Usuario;
+import fatec.vortek.cimob.domain.service.UsuarioService;
 import fatec.vortek.cimob.infrastructure.repository.RegiaoRepository;
+import fatec.vortek.cimob.infrastructure.repository.UsuarioRepository;
 import fatec.vortek.cimob.presentation.dto.request.EventoRequestDTO;
 import fatec.vortek.cimob.presentation.dto.response.EventoResponseDTO;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ public class EventoController {
 
     private final EventoServiceImpl service;
     private final RegiaoRepository regiaoRepository;
+    private final UsuarioService usuarioService;
 
     @PostMapping
     public ResponseEntity<EventoResponseDTO> criar(@RequestBody EventoRequestDTO dto) {
@@ -31,6 +35,8 @@ public class EventoController {
                 .dataInicio(dto.getDataInicio())
                 .dataFim(dto.getDataFim())
                 .build();
+
+        e.setUsuario(usuarioService.getUsuarioLogado());
 
         if (dto.getRegioesIds() != null) {
             List<Regiao> regioes = regiaoRepository.findAllById(dto.getRegioesIds());
