@@ -3,7 +3,7 @@ package fatec.vortek.cimob.presentation.dto.response;
 import lombok.*;
 import fatec.vortek.cimob.domain.model.Evento;
 import fatec.vortek.cimob.domain.model.Regiao;
-import fatec.vortek.cimob.domain.model.Usuario;
+
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,8 +20,7 @@ public class EventoResponseDTO {
     private String descricao;
     private LocalDateTime dataInicio;
     private LocalDateTime dataFim;
-    private Usuario usuario;
-    private List<Regiao> regioes;
+    private List<RegiaoResponseDTO> regioes;
 
     public static EventoResponseDTO Model2ResponseDTO(Evento evento) {
         return new EventoResponseDTO(
@@ -30,8 +29,9 @@ public class EventoResponseDTO {
                 evento.getDescricao(),
                 evento.getDataInicio(),
                 evento.getDataFim(),
-                evento.getUsuario(),
-                evento.getRegioes()
+                evento.getRegioes().stream()
+                        .map(regiao -> new RegiaoResponseDTO(regiao.getRegiaoId(), regiao.getNome()))
+                        .collect(Collectors.toList())
         );
     }
 }
