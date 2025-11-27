@@ -84,7 +84,7 @@ public class IndicadorScheduler {
         // Cabeçalho: Destaque com borda e emojis de impacto
         msg.append("🚨 *ALERTA DE TRÂNSITO* 🚨\n");
         msg.append("╔═══════════════════════════════╗\n");
-        msg.append(String.format("║ %s %s | NÍVEL %d/5 %s ║\n", emojiNivel, textoNivel, nivelCritico, obterBarraProgresso(nivelCritico)));
+        msg.append(String.format("║ %s %s | NÍVEL %d/3 %s ║\n", emojiNivel, textoNivel, nivelCritico, obterBarraProgresso(nivelCritico)));
         msg.append("╚═══════════════════════════════╝\n\n");
         
         // Detalhes: Informações essenciais
@@ -113,10 +113,8 @@ public class IndicadorScheduler {
     private String obterEmojiNivel(Integer nivel) {
         if (nivel == null) return "⚪";
         return switch (nivel) {
-            case 5 -> "🔴"; // Emergência
-            case 4 -> "🟠"; // Muito Crítico
-            case 3 -> "🟡"; // Crítico
-            case 2 -> "🟢"; // Atenção
+            case 3 -> "🔴"; // Crítico
+            case 2 -> "🟡"; // Atenção
             default -> "🔵"; // Normal
         };
     }
@@ -127,8 +125,6 @@ public class IndicadorScheduler {
     private String obterTextoNivel(Integer nivel) {
         if (nivel == null) return "INDEFINIDO";
         return switch (nivel) {
-            case 5 -> "EMERGÊNCIA";
-            case 4 -> "MUITO CRÍTICO";
             case 3 -> "CRÍTICO";
             case 2 -> "ATENÇÃO";
             default -> "NORMAL";
@@ -159,10 +155,8 @@ public class IndicadorScheduler {
         if (nivel == null) return "⚠️ Aguarde mais informações";
         
         return switch (nivel) {
-            case 5 -> "*AÇÃO IMEDIATA:* Acionar plano de contingência. O trânsito está parado. Mude sua rota imediatamente.";
-            case 4 -> "*AÇÃO URGENTE:* Avaliar rotas alternativas. Congestionamento severo. Considere adiar o deslocamento.";
-            case 3 -> "*AÇÃO DE MONITORAMENTO:* Planejar tempo extra (+30 min). Trânsito intenso. Mantenha a vigilância.";
-            case 2 -> "*AÇÃO DE OBSERVAÇÃO:* Fluxo moderado. Fique atento a possíveis lentidões.";
+            case 3 -> "*AÇÃO URGENTE:* Avaliar rotas alternativas. Congestionamento severo. Considere adiar o deslocamento.";
+            case 2 -> "*AÇÃO DE MONITORAMENTO:* Planejar tempo extra (+30 min). Trânsito intenso. Mantenha a vigilância.";
             default -> "*AÇÃO PADRÃO:* Fluxo normal. Prossiga com segurança.";
         };
     }
